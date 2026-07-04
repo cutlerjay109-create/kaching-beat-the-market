@@ -1,5 +1,5 @@
 .env
 node_modules/
-data/
+/data/
 txline-credentials.json
 *.log
