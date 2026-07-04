@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Kaching — Beat the Market</title>
+  <link rel="stylesheet" href="/src/styles/styles.css">
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="nickname-logo">KACHING</div>
+    <div class="nickname-tagline">Beat the market</div>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button id="tab-login"  class="auth-tab active">Log In</button>
+      <button id="tab-signup" class="auth-tab">Sign Up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form" class="auth-form">
+      <input id="login-username" class="auth-input" type="text" placeholder="Username" maxlength="20" autocomplete="off">
+      <input id="login-password" class="auth-input" type="password" placeholder="Password" maxlength="40">
+      <button id="login-btn" class="start-btn">Log In</button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signup-form" class="auth-form" style="display:none">
+      <input id="signup-username" class="auth-input" type="text" placeholder="Choose a username" maxlength="20" autocomplete="off">
+      <input id="signup-password" class="auth-input" type="password" placeholder="Create a password" maxlength="40">
+      <button id="signup-btn" class="start-btn">Create Account</button>
+    </div>
+
+    <div id="auth-error" class="auth-error"></div>
+    <div class="nickname-footer">Powered by TxLINE live odds</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS OVERLAY -->
+<div id="how-it-works" style="display:none">
+  <div class="hiw-card">
+    <div class="hiw-title">How to Play</div>
+    <div class="hiw-sub">Beat the market</div>
+    <ul class="hiw-steps">
+      <li>
+        <span class="hiw-num">1</span>
+        Watch the live win-probability bar move with the real betting market
+      </li>
+      <li>
+        <span class="hiw-num">2</span>
+        Tap YES or NO on each prediction before time runs out
+      </li>
+      <li>
+        <span class="hiw-num">3</span>
+        Call it EARLY — before the odds move — for maximum points
+      </li>
+      <li>
+        <span class="hiw-num">4</span>
+        Build your streak and climb the leaderboard
+      </li>
+    </ul>
+    <button class="start-btn dismiss-btn">Let's Go</button>
+  </div>
+</div>
+
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-logo">KACHING</div>
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      Live
+    </div>
+  </div>
+
+  <!-- RECONNECTING BANNER -->
+  <div id="reconnecting">⚡ Reconnecting to live feed...</div>
+
+  <!-- MATCH VIEW -->
+  <div id="match-view">
+    <div class="match-header">
+      <div class="team-block">
+        <span class="team-flag" id="home-flag">🏴</span>
+        <div id="home-team" class="team-name">Home</div>
+      </div>
+      <div class="score-block">
+        <div class="score">
+          <span id="score-home">0</span>
+          <span class="score-sep">–</span>
+          <span id="score-away">0</span>
+        </div>
+        <div class="match-meta">
+          <span id="match-time-badge" class="match-time-badge">0'</span>
+          <span id="period-badge" class="period-badge">PRE</span>
+        </div>
+      </div>
+      <div class="team-block">
+        <span class="team-flag" id="away-flag">🏴</span>
+        <div id="away-team" class="team-name">Away</div>
+      </div>
+    </div>
+
+    <!-- PROBABILITY BAR -->
+    <div id="prob-bar-wrap">
+      <div class="prob-header">
+        <span id="prob-home-label" class="prob-team">Home</span>
+        <span class="prob-label">Win Probability</span>
+        <span id="prob-away-label" class="prob-team">Away</span>
+      </div>
+      <div class="prob-bar-track">
+        <div id="prob-fill" style="width:50%"></div>
+      </div>
+      <div class="prob-pct-row">
+        <span id="prob-home-pct" class="prob-pct-home">50%</span>
+        <span id="prob-away-pct" class="prob-pct-away">50%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STREAK DISPLAY -->
+  <div id="streak-display">
+    <div class="stat-block">
+      <div id="stat-score" class="stat-value">0</div>
+      <div class="stat-label">Score</div>
+    </div>
+    <div class="stat-block">
+      <div id="stat-streak" class="stat-value">0🔥</div>
+      <div class="stat-label">Streak</div>
+    </div>
+    <div class="stat-block">
+      <div id="stat-rank" class="stat-value">--</div>
+      <div class="stat-label">Rank</div>
+    </div>
+  </div>
+
+  <!-- PREDICTION CARD -->
+  <div id="prediction-card">
+    <div id="question-text">Loading question...</div>
+    <div class="answer-buttons">
+      <button id="btn-yes" class="btn-yes">YES</button>
+      <button id="btn-no"  class="btn-no">NO</button>
+    </div>
+    <div class="timer-bar-wrap">
+      <div class="timer-track">
+        <div id="timer-bar" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT FLASH -->
+  <div id="result-flash">
+    <div class="result-row">
+      <div id="result-headline"></div>
+      <div id="result-points"></div>
+    </div>
+    <div id="result-why"></div>
+  </div>
+
+  <!-- PUNDIT PLAYER -->
+  <div id="pundit-player">
+    <div class="pundit-avatar">🎙</div>
+    <div class="pundit-body">
+      <div class="pundit-label">Pundit</div>
+      <div id="pundit-text"></div>
+    </div>
+    <div class="pundit-eq">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="leaderboard">
+    <div class="lb-header">
+      <span class="lb-title">Leaderboard</span>
+      <span class="lb-live-dot"></span>
+    </div>
+    <div id="lb-list"></div>
+    <button id="share-btn" class="share-btn">Share My Score</button>
+  </div>
+
+  <!-- CONNECT WALLET — hidden, Solana used for data subscription layer -->
+  <div id="connect-wallet" style="display:none">
+    <button id="wallet-btn">⬡ Connect Wallet</button>
+    <div id="wallet-info"></div>
+  </div>
+
+</div>
+
+<!-- SCRIPTS -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/src/services/flags.js"></script>
+<script src="/src/components/HowItWorks.js"></script>
+<script src="/src/components/MatchView.js"></script>
+<script src="/src/components/ProbabilityBar.js"></script>
+<script src="/src/components/StreakDisplay.js"></script>
+<script src="/src/components/PredictionCard.js"></script>
+<script src="/src/components/ResultFlash.js"></script>
+<script src="/src/components/Leaderboard.js"></script>
+<script src="/src/components/PunditPlayer.js"></script>
+<script src="/src/components/ConnectWallet.js"></script>
+<script src="/src/services/socket.js"></script>
+<script src="/src/services/api.js"></script>
+<script src="/src/services/wallet.js"></script>
+<script>
+  const UI = {
+    updateMatchView, updateProbabilityBar, updateStreakDisplay,
+    showPredictionCard, hidePredictionCard, showResult,
+    updateLeaderboard, initShareButton, showPundit,
+    HowItWorks, connectWallet,
+  };
+  // Make connectWallet directly accessible too
+  window._connectWallet = connectWallet;
+  const SOCKET = { initSocket };
+  const API    = { startSession, getLeaderboard, getPlayerRank, signupUser, loginUser };
+  const WALLET = { saveStreakOnChain, connectAndLinkWallet, restoreWithWallet };
+</script>
+<script src="/src/main.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,1864 @@
+[
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 0,
+      "period": "PRE",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 0,
+      "period": "PRE",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 0,
+      "period": "PRE",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 1,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 2,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 3,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 4,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 5,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 6,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 7,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 8,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 9,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 10,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 11,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 12,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 13,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 14,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 7,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 15,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 16,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 17,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 18,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 19,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 20,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 21,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 22,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 23,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 24,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 25,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 26,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 27,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 28,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 29,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 30,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 31,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 32,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 33,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 34,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 35,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 36,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 37,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 38,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 39,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 40,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 41,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 42,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 43,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 44,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 8,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 45,
+      "period": "1H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 45,
+      "period": "HT",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 8,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 45,
+      "period": "HT",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 45,
+      "period": "HT",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 46,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 47,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 48,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 49,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 50,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 51,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 52,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 8,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 53,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 54,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 55,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 8,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 56,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 57,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 58,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 59,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 60,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 61,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 62,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 63,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 64,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 65,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 66,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 67,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 68,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 69,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 70,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 71,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 72,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 73,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 74,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 75,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 76,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 77,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 78,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 1,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 79,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 80,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 81,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 82,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 6,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 83,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 84,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 0,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 85,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 7,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 86,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 87,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 0,
+      "redCards": 0,
+      "match_time": 88,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "match_time": 89,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 2,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 90,
+      "period": "2H",
+      "inRunning": true
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0,
+      "match_time": 90,
+      "period": "FT",
+      "inRunning": false
+    }
+  },
+  {
+    "delayMs": 3000,
+    "data": {
+      "fixture_id": 18179549,
+      "home_team": "Colombia",
+      "away_team": "Ghana",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "goals": 1,
+      "corners": 4,
+      "yellowCards": 2,
+      "redCards": 0,
+      "match_time": 90,
+      "period": "FT",
+      "inRunning": false
+    }
+  }
+]
