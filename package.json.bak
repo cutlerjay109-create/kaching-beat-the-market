@@ -1,7 +1,7 @@
 {
   "name": "kaching-beat-the-market",
   "version": "1.0.0",
-  "description": "Beat the market \u2014 live World Cup prediction game powered by TxLINE",
+  "description": "Beat the market — live World Cup prediction game powered by TxLINE",
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
@@ -20,13 +20,9 @@
     "node-fetch": "^2.7.0",
     "socket.io": "^4.7.5",
     "sql.js": "^1.12.0",
-    "tweetnacl": "^1.0.3",
-    "uuid": "^9.0.1"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
-  },
-  "engines": {
-    "node": ">=18"
   }
 }

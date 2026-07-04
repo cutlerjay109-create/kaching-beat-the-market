@@ -82,7 +82,7 @@ function maybeAskQuestion(matchState) {
     ...question,
     askedAt:    now,
     matchState: matchState,
-    expiresAt:  now + (process.env.SOURCE_MODE === 'replay' ? 60 * 1000 : (question.window ? question.window * 1000 : 10 * 60 * 1000)),
+    expiresAt:  now + (process.env.SOURCE_MODE === 'replay' ? 60 * 1000 : (question.window || 10 * 60 * 1000)),
   };
   lastQuestionTs = now;
 

@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""
+fix_kaching.py — applies the outstanding fixes to kaching-beat-the-market.
+
+Run from the repo root:  python3 fix_kaching.py
+
+Fixes:
+  1. Adds `uuid` to package.json dependencies + an engines field (Node >=18).
+  2. questionEngine.js: treats question.window as SECONDS (was used as ms),
+     so live-mode questions no longer expire in ~600ms.
+  3. resolver.js: "stay/hold" questions (no_goals, probability_hold,
+     probability_tight) no longer resolve instantly as YES. They resolve
+     early as NO only if the condition breaks, otherwise at window expiry.
+  4. Fills in the empty .env.example with the required variables.
+
+Every edited file is backed up to <file>.bak first. Safe to re-run.
+"""
+
+import json
+import os
+import re
+import sys
+
+ROOT = os.getcwd()
+
+if not os.path.exists(os.path.join(ROOT, "package.json")):
+    sys.exit("ERROR: run this from the repo root (no package.json here).")
+
+
+def backup(path):
+    bak = path + ".bak"
+    if not os.path.exists(bak):
+        with open(path, "r", encoding="utf-8") as f:
+            data = f.read()
+        with open(bak, "w", encoding="utf-8") as f:
+            f.write(data)
+
+
+def read(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def write(path, text):
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
+changed = []
+skipped = []
+
+# ---------------------------------------------------------------------------
+# 1. package.json — add uuid + engines
+# ---------------------------------------------------------------------------
+pkg_path = os.path.join(ROOT, "package.json")
+pkg = json.loads(read(pkg_path))
+deps = pkg.get("dependencies", {})
+touched_pkg = False
+
+if "uuid" not in deps:
+    deps["uuid"] = "^9.0.1"
+    pkg["dependencies"] = dict(sorted(deps.items()))
+    touched_pkg = True
+
+if "engines" not in pkg:
+    pkg["engines"] = {"node": ">=18"}
+    touched_pkg = True
+
+if touched_pkg:
+    backup(pkg_path)
+    write(pkg_path, json.dumps(pkg, indent=2) + "\n")
+    changed.append("package.json (added uuid dependency + engines Node>=18)")
+else:
+    skipped.append("package.json (uuid + engines already present)")
+
+# ---------------------------------------------------------------------------
+# 2. questionEngine.js — window is seconds, not ms
+# ---------------------------------------------------------------------------
+qe_path = os.path.join(ROOT, "backend", "game", "questionEngine.js")
+qe = read(qe_path)
+old_win = "(question.window || 10 * 60 * 1000)"
+new_win = "(question.window ? question.window * 1000 : 10 * 60 * 1000)"
+
+if new_win in qe:
+    skipped.append("questionEngine.js (window units already fixed)")
+elif old_win in qe:
+    backup(qe_path)
+    qe = qe.replace(old_win, new_win)
+    write(qe_path, qe)
+    changed.append("questionEngine.js (window seconds -> ms)")
+else:
+    skipped.append("questionEngine.js (window expression not found — CHECK MANUALLY)")
+
+# ---------------------------------------------------------------------------
+# 3. resolver.js — fix instant-resolve of hold/stay questions
+# ---------------------------------------------------------------------------
+rs_path = os.path.join(ROOT, "backend", "game", "resolver.js")
+rs = read(rs_path)
+
+NEW_RESOLVE = '''// Fields whose YES outcome means "the state HELD for the whole window".
+// These must not resolve early just because the condition is true at the start.
+const HOLD_FIELDS = new Set(["no_goals", "probability_hold", "probability_tight"]);
+
+// Resolve a yes/no prediction against current match state.
+// Returns { resolved: true, correct, secondsBefore, oddsBefore, oddsAfter }
+// or { resolved: false } if not enough data yet.
+function resolve(question, answer, matchStateBefore, matchStateNow) {
+  if (!question || !matchStateNow) return { resolved: false };
+
+  const askedAt  = question.askedAt;
+  const now      = Date.now();
+  const isHold   = HOLD_FIELDS.has(question.field);
+  const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
+  const expired  = now >= question.expiresAt;
+
+  let resolvedNow = false;
+  let conditionMet;
+
+  if (isHold) {
+    // "stays" question: YES wins only if it held all the way to expiry.
+    if (!stillMet) {            // hold broke early -> resolve now as NO
+      resolvedNow  = true;
+      conditionMet = false;
+    } else if (expired) {       // held the whole window -> YES
+      resolvedNow  = true;
+      conditionMet = true;
+    }
+  } else {
+    // "happens" question: YES wins as soon as it happens.
+    if (stillMet) {             // event occurred -> resolve now as YES
+      resolvedNow  = true;
+      conditionMet = true;
+    } else if (expired) {       // never happened -> NO
+      resolvedNow  = true;
+      conditionMet = false;
+    }
+  }
+
+  if (!resolvedNow) return { resolved: false };
+
+  const correct = (answer === "yes") === conditionMet;
+
+  // How many seconds before the odds moved did the player call it
+  const oddsShiftTs   = matchStateNow.oddsShiftTs || now;
+  const secondsBefore = Math.max(0, Math.round((oddsShiftTs - askedAt) / 1000));
+
+  closeQuestion();
+
+  return {
+    resolved:     true,
+    correct,
+    conditionMet,
+    secondsBefore,
+    oddsBefore:   matchStateBefore ? matchStateBefore.homeProb : null,
+    oddsAfter:    matchStateNow    ? matchStateNow.homeProb    : null,
+  };
+}
+
+'''
+
+if "HOLD_FIELDS" in rs:
+    skipped.append("resolver.js (already patched)")
+else:
+    # Replace everything from `function resolve(question` up to the blank
+    # line before `function _conditionMet`.
+    pattern = re.compile(
+        r"(?:// Resolve a yes/no[^\n]*\n(?://[^\n]*\n)*)?"
+        r"function resolve\(question.*?\n\}\n\n(?=function _conditionMet)",
+        re.S,
+    )
+    new_rs, n = pattern.subn(NEW_RESOLVE, rs)
+    if n == 1:
+        backup(rs_path)
+        write(rs_path, new_rs)
+        changed.append("resolver.js (hold/stay questions no longer resolve instantly)")
+    else:
+        skipped.append(
+            "resolver.js (resolve() block not matched, n=%d — CHECK MANUALLY)" % n
+        )
+
+# ---------------------------------------------------------------------------
+# 4. .env.example — fill in required vars if empty
+# ---------------------------------------------------------------------------
+env_path = os.path.join(ROOT, ".env.example")
+ENV_TEMPLATE = """# Copy to .env and fill in real values. Never commit .env.
+
+# Server
+PORT=3000
+SOURCE_MODE=live            # live | replay
+
+# TxLINE (live odds/scores feed)
+TXLINE_API_TOKEN=
+TXLINE_JWT=                 # auto-refreshed at runtime; can start blank
+TXLINE_API_ORIGIN=https://txline.txodds.com
+TXLINE_API_BASE=https://txline.txodds.com/api
+
+# Groq (pundit text)
+GROQ_API_KEY=
+
+# ElevenLabs (pundit voice)
+ELEVENLABS_API_KEY=
+ELEVENLABS_VOICE_ID=onwK4e9ZLuTAKqWW03F9
+
+# Solana
+SOLANA_NETWORK=mainnet-beta
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+"""
+
+existing_env = read(env_path) if os.path.exists(env_path) else ""
+if existing_env.strip():
+    skipped.append(".env.example (already has content — left untouched)")
+else:
+    if os.path.exists(env_path):
+        backup(env_path)
+    write(env_path, ENV_TEMPLATE)
+    changed.append(".env.example (populated required vars)")
+
+# ---------------------------------------------------------------------------
+# Report
+# ---------------------------------------------------------------------------
+print("\n=== CHANGED ===")
+for c in changed:
+    print("  +", c)
+print("\n=== SKIPPED ===")
+for s in skipped:
+    print("  -", s)
+print("\nBackups written as <file>.bak (only on first run).")
+print("Next: run  npm install  (to pull uuid), then start the server.")

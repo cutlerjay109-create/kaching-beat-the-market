@@ -2,51 +2,26 @@
 
 const { closeQuestion } = require("./questionEngine");
 
-// Fields whose YES outcome means "the state HELD for the whole window".
-// These must not resolve early just because the condition is true at the start.
-const HOLD_FIELDS = new Set(["no_goals", "probability_hold", "probability_tight"]);
-
 // Resolve a yes/no prediction against current match state.
-// Returns { resolved: true, correct, secondsBefore, oddsBefore, oddsAfter }
+// Returns { resolved: true, correct: bool, secondsBefore, oddsBefore, oddsAfter }
 // or { resolved: false } if not enough data yet.
 function resolve(question, answer, matchStateBefore, matchStateNow) {
   if (!question || !matchStateNow) return { resolved: false };
 
-  const askedAt  = question.askedAt;
-  const now      = Date.now();
-  const isHold   = HOLD_FIELDS.has(question.field);
-  const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
-  const expired  = now >= question.expiresAt;
+  const { id, source, field, threshold } = question;
+  const askedAt = question.askedAt;
+  const now     = Date.now();
 
-  let resolvedNow = false;
-  let conditionMet;
-
-  if (isHold) {
-    // "stays" question: YES wins only if it held all the way to expiry.
-    if (!stillMet) {            // hold broke early -> resolve now as NO
-      resolvedNow  = true;
-      conditionMet = false;
-    } else if (expired) {       // held the whole window -> YES
-      resolvedNow  = true;
-      conditionMet = true;
-    }
-  } else {
-    // "happens" question: YES wins as soon as it happens.
-    if (stillMet) {             // event occurred -> resolve now as YES
-      resolvedNow  = true;
-      conditionMet = true;
-    } else if (expired) {       // never happened -> NO
-      resolvedNow  = true;
-      conditionMet = false;
-    }
+  // Check if window has passed
+  if (now < question.expiresAt && !_conditionMet(question, matchStateBefore, matchStateNow)) {
+    return { resolved: false };
   }
 
-  if (!resolvedNow) return { resolved: false };
-
-  const correct = (answer === "yes") === conditionMet;
+  const conditionMet = _conditionMet(question, matchStateBefore, matchStateNow);
+  const correct      = (answer === "yes") === conditionMet;
 
   // How many seconds before the odds moved did the player call it
-  const oddsShiftTs   = matchStateNow.oddsShiftTs || now;
+  const oddsShiftTs  = matchStateNow.oddsShiftTs || now;
   const secondsBefore = Math.max(0, Math.round((oddsShiftTs - askedAt) / 1000));
 
   closeQuestion();
