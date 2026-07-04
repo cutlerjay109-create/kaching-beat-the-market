@@ -1,43 +1,59 @@
 // backend/game/probability.js — converts raw TxLINE odds into win probabilities.
-// TxLINE returns prices as implied probability integers (scaled by 10000).
-// e.g. 5000 = 50.00%, 6500 = 65.00%
 
-// Convert a raw TxLINE odds snapshot into a clean probability object.
 function extractProbability(oddsData) {
   try {
-    // TxLINE odds snapshot shape:
-    // { fixture_id, price_names: ["home","draw","away"], prices: [4500,2500,3000] }
-    const { fixture_id, price_names, prices, in_running, ts } = oddsData;
-    if (!price_names || !prices || prices.length < 2) return null;
+    const fixtureId  = oddsData.FixtureId    || oddsData.fixture_id;
+    const priceNames = oddsData.PriceNames   || oddsData.price_names;
+    const prices     = oddsData.Prices       || oddsData.prices;
+    const inRunning  = oddsData.InRunning    != null ? oddsData.InRunning  : (oddsData.in_running || false);
+    const ts         = oddsData.Ts           || oddsData.ts || Date.now();
+    const oddsType   = oddsData.SuperOddsType || oddsData.super_odds_type || "";
+    const pct        = oddsData.Pct          || oddsData.pct || [];
 
-    const homeIdx = price_names.findIndex(n =>
-      n.toLowerCase().includes("home") || n === "1");
-    const awayIdx = price_names.findIndex(n =>
-      n.toLowerCase().includes("away") || n === "2");
+    const isMatchWinner =
+      oddsType === "" ||
+      oddsType.includes("1X2") ||
+      oddsType.includes("PARTICIPANT_RESULT") ||
+      oddsType.includes("MATCH_RESULT") ||
+      oddsType.includes("WINNER");
 
-    const homeProb = homeIdx >= 0 ? prices[homeIdx] / 10000 : null;
-    const awayProb = awayIdx >= 0 ? prices[awayIdx] / 10000 : null;
-    const drawProb = prices.length > 2
-      ? 1 - (homeProb || 0) - (awayProb || 0)
-      : null;
+    if (!isMatchWinner) return null;
+    if (!prices || prices.length < 2) return null;
 
-    return {
-      fixtureId: fixture_id,
-      home:      homeProb,
-      away:      awayProb,
-      draw:      drawProb,
-      inRunning: in_running || false,
-      ts:        ts || Date.now(),
-    };
+    let homeProb, awayProb, drawProb;
+
+    if (pct.length >= 2 && pct[0] !== "NA" && pct[0] !== undefined) {
+      homeProb = parseFloat(pct[0]) / 100;
+      drawProb = pct.length > 2 ? parseFloat(pct[1]) / 100 : null;
+      awayProb = parseFloat(pct[pct.length - 1]) / 100;
+    } else if (priceNames && priceNames.length >= 2) {
+      const homeIdx = priceNames.findIndex(n =>
+        n === "part1" || n.toLowerCase().includes("home") || n === "1");
+      const awayIdx = priceNames.findIndex(n =>
+        n === "part2" || n.toLowerCase().includes("away") || n === "2");
+      const drawIdx = priceNames.findIndex(n =>
+        n.toLowerCase().includes("draw") || n === "x");
+      homeProb = homeIdx >= 0 ? prices[homeIdx] / 10000 : 0.45;
+      awayProb = awayIdx >= 0 ? prices[awayIdx] / 10000 : 0.30;
+      drawProb = drawIdx >= 0 ? prices[drawIdx] / 10000 : null;
+    } else {
+      homeProb = prices[0] / 10000;
+      awayProb = prices[prices.length - 1] / 10000;
+      drawProb = prices.length > 2 ? prices[1] / 10000 : null;
+    }
+
+    homeProb = Math.max(0.02, Math.min(0.96, homeProb || 0.45));
+    awayProb = Math.max(0.02, Math.min(0.96, awayProb || 0.30));
+
+    return { fixtureId, home: homeProb, away: awayProb, draw: drawProb, inRunning, ts };
   } catch (e) {
     return null;
   }
 }
 
-// Calculate how much the probability shifted between two snapshots.
 function calcShift(probBefore, probAfter) {
   if (!probBefore || !probAfter) return 0;
-  return Math.abs((probAfter.home || 0) - (probBefore.home || 0));
+  return Math.abs((probAfter.homeProb || 0) - (probBefore.homeProb || 0));
 }
 
 module.exports = { extractProbability, calcShift };

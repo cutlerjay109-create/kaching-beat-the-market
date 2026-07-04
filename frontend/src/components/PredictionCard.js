@@ -20,19 +20,19 @@ function showPredictionCard(question, onAnswer) {
 
   // Timer bar countdown
   if (timerInterval) clearInterval(timerInterval);
-  if (timerBar && question.expiresAt) {
-    const total    = question.expiresAt - Date.now();
+  if (timerBar) {
+    const windowMs = question.windowMs || 3 * 60 * 1000;
     const start    = Date.now();
     timerBar.style.width = "100%";
     timerInterval = setInterval(() => {
       const elapsed = Date.now() - start;
-      const pct     = Math.max(0, 100 - (elapsed / total) * 100);
+      const pct     = Math.max(0, 100 - (elapsed / windowMs) * 100);
       timerBar.style.width = `${pct}%`;
       if (pct <= 0) {
         clearInterval(timerInterval);
         hidePredictionCard();
       }
-    }, 200);
+    }, 500);
   }
 
   // Answer handlers

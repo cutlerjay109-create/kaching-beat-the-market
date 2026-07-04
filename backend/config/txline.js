@@ -1,22 +1,51 @@
-// backend/config/txline.js — TxLINE endpoint URLs and stream config.
+// backend/config/txline.js — TxLINE endpoints and JWT auto-refresh.
 
-const { TXLINE_API_ORIGIN, TXLINE_API_BASE } = require("./env");
+const fs   = require("fs");
+const path = require("path");
+
+const API_ORIGIN = "https://txline.txodds.com";
+const API_BASE   = "https://txline.txodds.com/api";
+const ENV_PATH   = path.join(__dirname, "../../.env");
+
+async function refreshJwt() {
+  try {
+    const res  = await fetch(`${API_ORIGIN}/auth/guest/start`, { method: "POST" });
+    const text = await res.text();
+    let jwt;
+    try { jwt = JSON.parse(text).token; } catch { jwt = text.trim(); }
+    if (!jwt) throw new Error("Empty JWT response");
+    process.env.TXLINE_JWT = jwt;
+    if (fs.existsSync(ENV_PATH)) {
+      let env = fs.readFileSync(ENV_PATH, "utf8");
+      if (env.includes("TXLINE_JWT=")) {
+        env = env.replace(/TXLINE_JWT=.*/, "TXLINE_JWT=" + jwt);
+      } else {
+        env += "\nTXLINE_JWT=" + jwt;
+      }
+      fs.writeFileSync(ENV_PATH, env);
+    }
+    console.log("[txline] JWT refreshed successfully.");
+    return jwt;
+  } catch (e) {
+    console.error("[txline] JWT refresh failed:", e.message);
+    return null;
+  }
+}
+
+function startJwtAutoRefresh() {
+  refreshJwt();
+  setInterval(refreshJwt, 45 * 60 * 1000);
+  console.log("[txline] JWT auto-refresh started (every 45 min).");
+}
 
 module.exports = {
-  // REST snapshots
-  ODDS_SNAPSHOT_URL:   `${TXLINE_API_BASE}/odds/snapshot`,
-  SCORES_SNAPSHOT_URL: `${TXLINE_API_BASE}/scores/snapshot`,
-
-  // Live streams (Server-Sent Events)
-  ODDS_STREAM_URL:   `${TXLINE_API_BASE}/odds/stream`,
-  SCORES_STREAM_URL: `${TXLINE_API_BASE}/scores/stream`,
-
-  // Auth
-  GUEST_AUTH_URL: `${TXLINE_API_ORIGIN}/auth/guest/start`,
-
-  // World Cup competition ID (FIFA World Cup 2026)
-  WORLD_CUP_COMPETITION_ID: 17,
-
-  // How often to refresh the guest JWT (ms) — 45 minutes to be safe
+  ODDS_SNAPSHOT_URL:   `${API_BASE}/odds/snapshot`,
+  SCORES_SNAPSHOT_URL: `${API_BASE}/scores/snapshot`,
+  ODDS_STREAM_URL:     `${API_BASE}/odds/stream`,
+  SCORES_STREAM_URL:   `${API_BASE}/scores/stream`,
+  GUEST_AUTH_URL:      `${API_ORIGIN}/auth/guest/start`,
+  WORLD_CUP_COMPETITION_ID: 72,
   JWT_REFRESH_INTERVAL: 45 * 60 * 1000,
+  refreshJwt,
+  startJwtAutoRefresh,
 };

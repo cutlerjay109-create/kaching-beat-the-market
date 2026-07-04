@@ -16,11 +16,13 @@ function pushMatchState(state) {
 // Push a new prediction question to all players
 function pushQuestion(question) {
   if (!io) return;
+  const windowMs = Math.max(question.expiresAt - Date.now(), 10000);
   io.emit("new_question", {
-    id:       question.id,
-    text:     question.text,
-    type:     question.type,
+    id:        question.id,
+    text:      question.text,
+    type:      question.type,
     expiresAt: question.expiresAt,
+    windowMs,
   });
 }
 

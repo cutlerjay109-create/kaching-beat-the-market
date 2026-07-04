@@ -5,7 +5,7 @@ const QUESTIONS = require("../../shared/questions");
 // Minimum gap between questions (ms)
 const MIN_GAP_MS = process.env.SOURCE_MODE === 'replay' ? 15 * 1000 : 3 * 60 * 1000; // 15s replay, 3min live
 
-let lastQuestionTs = 0;
+let lastQuestionTs = Date.now(); // delay first question by MIN_GAP_MS
 let activeQuestion = null;
 
 // Pick a random question from the list
