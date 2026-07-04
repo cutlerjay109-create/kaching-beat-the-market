@@ -159,9 +159,15 @@ async function handleScores(scoresData) {
   const matchTime = scoresData.match_time != null ? scoresData.match_time
                   : (clock.Seconds ? Math.floor(clock.Seconds / 60) : (prev.matchTime || 0));
   const statusId  = scoresData.StatusId || scoresData.status_id;
-  const period    = scoresData.period || scoresData.GameState ||
+  const gameState = (scoresData.GameState || "").toLowerCase();
+  const period    = scoresData.period ||
                     (statusId === 4 ? "1H" : statusId === 5 ? "HT" :
-                     statusId === 6 ? "2H" : statusId === 7 ? "FT" : (prev.period || "PRE"));
+                     statusId === 6 ? "2H" : statusId === 7 ? "FT" :
+                     gameState.includes("first") ? "1H" :
+                     gameState.includes("second") ? "2H" :
+                     gameState.includes("half") ? "HT" :
+                     gameState === "inprogress" ? "1H" :
+                     (prev.period || "PRE"));
   const inRunning = scoresData.inRunning != null ? scoresData.inRunning
                   : (clock.Running != null ? clock.Running : (prev.inRunning || false));
 
