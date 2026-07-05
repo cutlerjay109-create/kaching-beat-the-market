@@ -51,6 +51,7 @@ push.init(io);
 startJwtAutoRefresh();
 
 let currentMatchState  = null;
+let lastOddsShiftPunditTs = 0;
 let previousMatchState = null;
 let openPredictions    = {};
 let maxHomeGoals       = 0;
@@ -148,7 +149,11 @@ async function handleOdds(oddsData) {
   };
 
   const shift = calcShift(previousMatchState, currentMatchState);
-  if (shift > 0.05 && previousMatchState && connectedPlayers > 0 && currentMatchState.inRunning && prob.inRunning) {
+  const now_odds = Date.now();
+  if (shift > 0.08 && previousMatchState && connectedPlayers > 0 &&
+      currentMatchState.inRunning && prob.inRunning &&
+      now_odds - lastOddsShiftPunditTs > 2 * 60 * 1000) {
+    lastOddsShiftPunditTs = now_odds;
     const before = Math.round((previousMatchState.homeProb || 0.5) * 100);
     const after  = Math.round((currentMatchState.homeProb  || 0.5) * 100);
     console.log(`[odds] shift: ${before}% -> ${after}%`);
@@ -350,6 +355,15 @@ io.on("connection", (socket) => {
   if (currentMatchState && currentMatchState.inRunning) {
     // Live match — send immediately
     socket.emit("match_state", { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
+    // Send active question to reconnecting player so they don't miss it
+    const aq = getActiveQuestion();
+    if (aq) {
+      const windowMs = Math.max(aq.expiresAt - Date.now(), 5000);
+      socket.emit("new_question", {
+        id: aq.id, text: aq.text, type: aq.type,
+        expiresAt: aq.expiresAt, windowMs,
+      });
+    }
   } else {
     // No live match — send next fixture countdown instantly so screen is never blank
     const next = getNextUpcoming();
