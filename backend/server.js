@@ -207,9 +207,11 @@ async function handleScores(scoresData) {
   // Only process scores for the next upcoming fixture or a live one
   const next        = getNextUpcoming();
   const _inRunning  = scoresData.inRunning ||
-                      (scoresData.Clock && scoresData.Clock.Running) || false;
+                      (scoresData.Clock && scoresData.Clock.Running) ||
+                      (currentMatchState && currentMatchState.inRunning) || false;
   const isNext      = next && fid != null && String(fid) === String(next.fixtureId);
-  if (!_inRunning && !isNext) return;
+  const isLiveFid   = currentMatchState && fid != null && String(fid) === String(currentMatchState.fixtureId);
+  if (!_inRunning && !isNext && !isLiveFid) return;
   const fixture = fixtureNames[fid] || {};
 
   const homeTeam = scoresData.home_team || fixture.home || scoresData.Participant1 || prev.homeTeam || "Home";
@@ -647,6 +649,7 @@ setInterval(async () => {
 // ── COUNTDOWN (fully automatic from TxLINE fixture data) ────────────────────
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
+  if (currentMatchState && (currentMatchState.period === "1H" || currentMatchState.period === "2H" || currentMatchState.period === "HT")) return;
   if (process.env.SOURCE_MODE === "replay") return;
   if (connectedPlayers === 0) return;
   const next = getNextUpcoming();
