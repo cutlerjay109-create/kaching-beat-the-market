@@ -15,23 +15,44 @@ function unlockAudio() {
 document.addEventListener("click",      unlockAudio, { once: true });
 document.addEventListener("touchstart", unlockAudio, { once: true });
 
+// Text queue matches audio queue — each text pairs with its audio
+let textQueue = [];
+
 function showPundit(reaction) {
-  const el   = document.getElementById("pundit-player");
-  const text = document.getElementById("pundit-text");
+  const el = document.getElementById("pundit-player");
   if (!el) return;
-  if (text) text.textContent = reaction.text || "";
-  el.classList.add("visible");
   if (reaction.audioBase64) {
+    // Queue both text and audio together
+    textQueue.push(reaction.text || "");
     audioQueue.push(reaction.audioBase64);
     if (!isPlaying) playNext();
+  } else if (reaction.text) {
+    // Text only — show for 5 seconds
+    const textEl = document.getElementById("pundit-text");
+    if (textEl) textEl.textContent = reaction.text;
+    el.classList.add("visible");
+    setTimeout(() => el.classList.remove("visible"), 5000);
   }
-  setTimeout(() => el.classList.remove("visible"), 8000);
 }
 
 function playNext() {
-  if (audioQueue.length === 0) { isPlaying = false; return; }
+  if (audioQueue.length === 0) {
+    isPlaying = false;
+    // Hide pundit panel when queue is empty
+    const el = document.getElementById("pundit-player");
+    if (el) el.classList.remove("visible");
+    return;
+  }
   isPlaying = true;
   const base64 = audioQueue.shift();
+  const text   = textQueue.shift() || "";
+
+  // Show text for this audio clip
+  const el     = document.getElementById("pundit-player");
+  const textEl = document.getElementById("pundit-text");
+  if (textEl) textEl.textContent = text;
+  if (el) el.classList.add("visible");
+
   try {
     const binary = atob(base64);
     const bytes  = new Uint8Array(binary.length);
@@ -40,11 +61,19 @@ function playNext() {
     const url   = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.volume  = 1.0;
-    audio.onended = () => { URL.revokeObjectURL(url); playNext(); };
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      // Hide text 500ms after audio ends then play next
+      setTimeout(() => {
+        if (audioQueue.length === 0 && el) el.classList.remove("visible");
+        playNext();
+      }, 500);
+    };
     audio.onerror = () => { URL.revokeObjectURL(url); playNext(); };
     audio.play().catch(e => {
       console.warn("[pundit] autoplay blocked:", e.message);
       audioQueue.unshift(base64);
+      textQueue.unshift(text);
       isPlaying = false;
     });
   } catch (e) {
