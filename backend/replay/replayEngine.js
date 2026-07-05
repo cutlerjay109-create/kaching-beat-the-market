@@ -8,7 +8,7 @@ const path = require("path");
 const RECORDINGS_DIR = path.join(__dirname, "recordings");
 
 // Play back a recorded feed (type = "odds" or "scores")
-function replayMatch(type, onData) {
+function replayMatch(type, onData, onComplete) {
   const file = path.join(RECORDINGS_DIR, `${type}.json`);
 
   if (!fs.existsSync(file)) {
@@ -37,13 +37,10 @@ function replayMatch(type, onData) {
   function fireNext() {
     if (i >= events.length) {
       console.log(`[replay] ${type} replay complete.`);
-      // Stop question engine when scores replay finishes
-      if (type === "scores") {
-        try {
-          const { stopQuestions } = require("../game/questionEngine");
-          stopQuestions();
-        } catch(e) {}
+      if (type === "scores" && !onComplete) {
+        try { const { stopQuestions } = require("../game/questionEngine"); stopQuestions(); } catch(e) {}
       }
+      if (onComplete) onComplete();
       return;
     }
     const { delayMs, data } = events[i++];

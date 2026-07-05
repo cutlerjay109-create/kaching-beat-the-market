@@ -392,27 +392,34 @@ io.on("connection", (socket) => {
     let demoScore      = 0;
     let demoStreak     = 0;
 
+    // Track open demo predictions to resolve against actual match events
+    let demoPrediction = null;
+
     // Handle prediction submission for demo player
     socket.on("submit_prediction_demo", async ({ answer }) => {
       if (!demoQuestion) return;
-      const q      = demoQuestion;
-      demoQuestion = null;
-      const correct    = Math.random() > 0.4; // simulate result based on replay
-      const points     = correct ? Math.round(100 * (1 + demoStreak * 0.25)) : 0;
-      demoScore       += points;
-      demoStreak       = correct ? demoStreak + 1 : 0;
-      socket.emit("prediction_result", {
-        correct, points,
-        timingLabel:  correct ? "Early" : "Wrong",
-        newScore:     demoScore,
-        newStreak:    demoStreak,
-        question:     q.text,
+      // Store the prediction with match state at time of submission
+      demoPrediction = {
+        question:    demoQuestion,
+        answer,
+        matchStateBefore: {
+          score:       { home: demoLastHome, away: demoLastAway },
+          goals:       demoLastHome + demoLastAway,
+          corners:     0,
+          homeProb:    demoHomeProb,
+          awayProb:    demoAwayProb,
+          period:      demoPeriod,
+          matchTime:   demoMatchTime,
+          inRunning:   true,
+        },
+        askedAt: Date.now(),
+      };
+      demoQuestion = null; // clear active question
+      socket.emit("prediction_accepted", {
+        predictionId: "demo-pred",
+        question:     demoPrediction.question.text,
         answer,
       });
-      react({ type: "prediction_result", data: {
-        correct, timingLabel: correct ? "Early" : "Wrong",
-        secondsBefore: 45, question: q.text, answer,
-      }}).then(r => r && socket.emit("pundit_reaction", r));
     });
 
     function sendScoresToSocket(data) {
@@ -441,6 +448,45 @@ io.on("connection", (socket) => {
           .then(r => r && socket.emit("pundit_reaction", r));
         demoLastHome = score.home;
         demoLastAway = score.away;
+      }
+
+      // Resolve open demo prediction against current match state
+      if (demoPrediction) {
+        const { resolve } = require("./game/resolver");
+        const currentDemoState = {
+          score:    { home: demoLastHome, away: demoLastAway },
+          goals:    demoLastHome + demoLastAway,
+          corners:  data.corners || 0,
+          homeProb: demoHomeProb,
+          awayProb: demoAwayProb,
+          period:   demoPeriod,
+          matchTime: demoMatchTime,
+          inRunning: data.inRunning != null ? data.inRunning : true,
+        };
+        const result = resolve(demoPrediction.question, demoPrediction.answer, demoPrediction.matchStateBefore, currentDemoState);
+        if (result.resolved) {
+          const pred = demoPrediction;
+          demoPrediction = null;
+          const correct  = result.correct;
+          const points   = correct ? Math.round(100 * (1 + Math.min(demoStreak, 4) * 0.25)) : 0;
+          demoScore     += points;
+          demoStreak     = correct ? demoStreak + 1 : 0;
+          const label    = correct ? (result.secondsBefore > 120 ? "Way Early" : result.secondsBefore > 60 ? "Early" : "On the Nose") : "Wrong";
+          socket.emit("prediction_result", {
+            predictionId: "demo-pred",
+            correct, points,
+            timingLabel:  label,
+            newScore:     demoScore,
+            newStreak:    demoStreak,
+            question:     pred.question.text,
+            answer:       pred.answer,
+          });
+          react({ type: "prediction_result", data: {
+            correct, timingLabel: label,
+            secondsBefore: result.secondsBefore || 30,
+            question: pred.question.text, answer: pred.answer,
+          }}).then(r => r && socket.emit("pundit_reaction", r));
+        }
       }
 
       // Ask question every 15 seconds during live play
@@ -488,7 +534,23 @@ io.on("connection", (socket) => {
       });
     }
 
-    replayMatch("scores", sendScoresToSocket);
+    let demoEnded = false;
+    function onDemoComplete() {
+      if (demoEnded) return;
+      demoEnded = true;
+      console.log("[demo] replay complete for:", socket.id);
+      demoSockets.delete(socket.id);
+      socket.emit("match_state", {
+        homeTeam: demoHome, awayTeam: demoAway,
+        score: { home: demoLastHome, away: demoLastAway },
+        matchTime: 90, period: "FT", inRunning: false,
+        homeProb: demoHomeProb, awayProb: demoAwayProb,
+        _mode: "replay", demoComplete: true,
+      });
+      socket.emit("demo_complete", { home: demoHome, away: demoAway, score: { home: demoLastHome, away: demoLastAway } });
+    }
+
+    replayMatch("scores", sendScoresToSocket, onDemoComplete);
     replayMatch("odds",   sendOddsToSocket);
 
     socket.once("disconnect", () => demoSockets.delete(socket.id));

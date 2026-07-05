@@ -146,6 +146,15 @@ function initWallet() {
   });
 }
 
+function onDemoComplete(data) {
+  state.demoMode = false;
+  const btn   = document.getElementById("demo-btn");
+  const label = document.getElementById("demo-label");
+  if (btn) { btn.textContent = "⏺ Watch Demo Match"; btn.disabled = false; btn.style.color = ""; btn.style.borderColor = ""; }
+  if (label) label.style.display = "none";
+  console.log("[demo] complete:", data.home, data.away, data.score);
+}
+
 function initSocketConnection() {
   socket = SOCKET.initSocket({
     onMatchState:       onMatchState,
@@ -155,6 +164,7 @@ function initSocketConnection() {
     onLeaderboard:      onLeaderboard,
     onReconnecting:     onReconnecting,
     onDisconnect:       onDisconnect,
+    onDemoComplete:     onDemoComplete,
   });
 }
 

@@ -5,15 +5,566 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
+      "period": "PRE",
+      "match_time": 0,
+      "inRunning": false,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "PRE",
+      "match_time": 0,
+      "inRunning": false,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "PRE",
+      "match_time": 0,
+      "inRunning": false,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "period": "1H",
-      "match_time": 73,
+      "match_time": 1,
       "inRunning": true,
       "score": {
         "home": 0,
-        "away": 1
+        "away": 0
       },
-      "goals": 1,
+      "goals": 0,
       "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 2,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 3,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 4,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 5,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 6,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 7,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 8,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 9,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 10,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 11,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 12,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 13,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 14,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 15,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 16,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 17,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 18,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 1,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 19,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 20,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 21,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 22,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 23,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 24,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 25,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 26,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 27,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
       "yellowCards": 1,
       "redCards": 0
     }
@@ -25,15 +576,15 @@
       "home_team": "Paraguay",
       "away_team": "France",
       "period": "1H",
-      "match_time": 90,
+      "match_time": 28,
       "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 2,
+      "yellowCards": 1,
       "redCards": 0
     }
   },
@@ -44,547 +595,376 @@
       "home_team": "Paraguay",
       "away_team": "France",
       "period": "1H",
-      "match_time": 98,
+      "match_time": 29,
       "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 2,
+      "yellowCards": 1,
       "redCards": 0
     }
   },
   {
     "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 30,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 2,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 31,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 32,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 33,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 34,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 35,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 36,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 37,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 38,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 39,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 3,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 40,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 41,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 42,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 43,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 44,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "1H",
+      "match_time": 45,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
     "data": {
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
       "period": "HT",
-      "match_time": 0,
+      "match_time": 45,
       "inRunning": false,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 1
-      },
-      "goals": 1,
-      "corners": 0,
-      "yellowCards": 3,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 1
-      },
-      "goals": 1,
-      "corners": 0,
-      "yellowCards": 3,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 86,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
+      "corners": 4,
       "yellowCards": 1,
       "redCards": 0
     }
   },
   {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 97,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 94,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 71,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 67,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 69,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 1
-      },
-      "goals": 1,
-      "corners": 0,
-      "yellowCards": 1,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 99,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 95,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18188721,
-      "home_team": "Paraguay",
-      "away_team": "France",
-      "period": "1H",
-      "match_time": 69,
-      "inRunning": true,
-      "score": {
-        "home": 0,
-        "away": 0
-      },
-      "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
-      "redCards": 0
-    }
-  },
-  {
-    "delayMs": 4000,
+    "delayMs": 2000,
     "data": {
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
       "period": "HT",
-      "match_time": 0,
+      "match_time": 45,
       "inRunning": false,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "HT",
+      "match_time": 45,
+      "inRunning": false,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
       "redCards": 0
     }
   },
@@ -594,16 +974,16 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "1H",
-      "match_time": 83,
+      "period": "2H",
+      "match_time": 46,
       "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 4,
+      "yellowCards": 1,
       "redCards": 0
     }
   },
@@ -613,16 +993,16 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "1H",
-      "match_time": 94,
+      "period": "2H",
+      "match_time": 47,
       "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 4,
+      "yellowCards": 1,
       "redCards": 0
     }
   },
@@ -632,7 +1012,330 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "1H",
+      "period": "2H",
+      "match_time": 48,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 49,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 50,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 4,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 51,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 52,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 53,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 54,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 1,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 55,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 56,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 57,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 5,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 58,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 59,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 60,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 61,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 62,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 63,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 64,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 6,
+      "yellowCards": 2,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
       "match_time": 65,
       "inRunning": true,
       "score": {
@@ -640,8 +1343,8 @@
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 7,
+      "yellowCards": 2,
       "redCards": 0
     }
   },
@@ -651,7 +1354,7 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "1H",
+      "period": "2H",
       "match_time": 66,
       "inRunning": true,
       "score": {
@@ -659,8 +1362,8 @@
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 1,
+      "corners": 7,
+      "yellowCards": 2,
       "redCards": 0
     }
   },
@@ -670,16 +1373,16 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
+      "period": "2H",
+      "match_time": 67,
+      "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 7,
+      "yellowCards": 2,
       "redCards": 0
     }
   },
@@ -689,16 +1392,16 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "PRE",
-      "match_time": 0,
-      "inRunning": false,
+      "period": "2H",
+      "match_time": 68,
+      "inRunning": true,
       "score": {
         "home": 0,
         "away": 0
       },
       "goals": 0,
-      "corners": 0,
-      "yellowCards": 0,
+      "corners": 7,
+      "yellowCards": 3,
       "redCards": 0
     }
   },
@@ -708,16 +1411,453 @@
       "fixture_id": 18188721,
       "home_team": "Paraguay",
       "away_team": "France",
-      "period": "HT",
-      "match_time": 0,
+      "period": "2H",
+      "match_time": 69,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 7,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 70,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 71,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 72,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 0
+      },
+      "goals": 0,
+      "corners": 8,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 73,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 9,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 74,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 9,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 75,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 9,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 76,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 77,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 3,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 78,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 79,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 80,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 81,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 10,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 82,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 11,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 83,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 11,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 84,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 11,
+      "yellowCards": 4,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 85,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 11,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 86,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 11,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 87,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 12,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 88,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 12,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 89,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 13,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "2H",
+      "match_time": 90,
+      "inRunning": true,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 13,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "FT",
+      "match_time": 90,
       "inRunning": false,
       "score": {
         "home": 0,
         "away": 1
       },
       "goals": 1,
-      "corners": 0,
-      "yellowCards": 3,
+      "corners": 13,
+      "yellowCards": 5,
+      "redCards": 0
+    }
+  },
+  {
+    "delayMs": 2000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "period": "FT",
+      "match_time": 90,
+      "inRunning": false,
+      "score": {
+        "home": 0,
+        "away": 1
+      },
+      "goals": 1,
+      "corners": 13,
+      "yellowCards": 5,
       "redCards": 0
     }
   }

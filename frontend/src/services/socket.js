@@ -44,6 +44,8 @@ function initSocket(handlers) {
   socket.on("prediction_accepted", (data) => {
     if (handlers.onPredictionAccepted) handlers.onPredictionAccepted(data);
   });
-
+  socket.on("demo_complete", (data) => {
+    if (handlers.onDemoComplete) handlers.onDemoComplete(data);
+  });
   return socket;
 }
