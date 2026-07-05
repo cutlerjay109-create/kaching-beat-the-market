@@ -250,6 +250,24 @@ function initAuthScreen() {
   });
 }
 
+function triggerDemo() {
+  const btn   = document.getElementById("demo-btn");
+  const label = document.getElementById("demo-label");
+  if (btn) {
+    btn.textContent    = "Loading demo...";
+    btn.disabled       = true;
+    btn.style.color    = "#f5a623";
+    btn.style.borderColor = "#f5a623";
+  }
+  if (socket) {
+    socket.emit("start_demo");
+    setTimeout(() => {
+      if (label) label.style.display = "block";
+      if (btn)   btn.textContent = "⏺ Demo Playing";
+    }, 1000);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
   initAuthScreen();
