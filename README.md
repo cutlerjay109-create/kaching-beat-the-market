@@ -51,7 +51,7 @@ Additional revenue paths:
 |---|---|
 | Backend | Node.js, Express, Socket.io |
 | Frontend | Plain HTML, CSS, JavaScript (no build step) |
-| Database | SQLite via sql.js (pure JS) |
+| Database | SQLite via sql.js (pure JS, persisted to disk) |
 | AI Text | Groq, llama-3.3-70b-versatile |
 | AI Voice | ElevenLabs, eleven_turbo_v2_5 |
 | Blockchain | Solana mainnet, on-chain TxLINE subscription |
@@ -62,13 +62,19 @@ Additional revenue paths:
 
 **Beat-the-market scoring** — Each prediction is timestamped at submission. When it resolves, the server calculates how many seconds before the odds moved the player called it. Earlier calls earn multipliers up to 3x.
 
-**Replay engine** — TxLINE historical score snapshots are converted to timed event sequences and played back through the live game engine. The same handlers process replay and live events, making the demo fully reproducible after matches end.
+**Replay engine** — TxLINE historical score snapshots are fetched and converted to timed event sequences, then played back through the live game engine at configurable speed. The same handlers process replay and live events — zero code duplication. A Python build script rebuilds the replay from the most recent finished match automatically.
+
+**Demo mode isolation** — A "Watch Demo Match" button plays a completed match replay to a single socket without affecting any live players. A `demoSockets` Set tracks which connections are in demo mode. Every broadcast — match state, questions, pundit, countdown — skips demo sockets. Demo predictions resolve against the actual replay match state using the same resolver as live mode, and results are saved to the real database.
 
 **Reconnect guard** — All TxLINE streams are wrapped in an exponential backoff reconnect layer that holds last-known values on screen during a hiccup. The UI never freezes.
 
-**Context-aware questions** — 16 question types are filtered by match state before being offered. Halftime questions only appear before minute 40. Probability questions only fire when odds data is flowing.
+**Context-aware questions** — 16 question types are filtered by match state before being offered. Halftime questions only appear before minute 40. Probability questions only fire when odds data is flowing. One question at a time — no new question until the current one resolves.
+
+**Score persistence** — Scores are written to a SQLite database via sql.js after every prediction result. An auto-save runs every 30 seconds as a safety net. On page refresh, the session is restored via a GET endpoint that never creates a new player, ensuring scores survive restarts and reconnects.
 
 **On-chain subscription** — The TxLINE data feed is activated by a confirmed Solana transaction subscribing to Service Level 12.
+
+**Auto fixture discovery** — On startup and every 30 minutes, the server fetches the fixture list from TxLINE and builds the upcoming match countdown automatically. No hardcoded teams, no hardcoded timestamps.
 
 ---
 
@@ -112,7 +118,13 @@ kaching-beat-the-market/
 ├── backend/
 │   ├── server.js                   entry point
 │   ├── config/                     env, TxLINE config, Solana
-│   ├── data/                       live streams and replay switch
+│   ├── data/                       live streams, replay switch, reconnect guard
+│   ├── replay/
+│   │   ├── replayEngine.js         plays recordings back in real time
+│   │   └── recordings/
+│   │       ├── build_replay.py     fetches latest finished match from TxLINE
+│   │       ├── scores.json         score event recording
+│   │       └── odds.json           odds event recording
 │   ├── game/                       questions, resolver, scoring, probability
 │   ├── pundit/                     Groq text + ElevenLabs voice pipeline
 │   ├── players/                    auth, database, scoring, leaderboard
@@ -123,10 +135,12 @@ kaching-beat-the-market/
 │   ├── index.html
 │   └── src/
 │       ├── main.js
-│       ├── components/             MatchView, PredictionCard, Pundit, Leaderboard
+│       ├── components/             MatchView, PredictionCard, PunditPlayer,
+│       │                           ResultFlash, StreakDisplay, Leaderboard,
+│       │                           HowItWorks, ConnectWallet
 │       └── services/               socket, api, wallet, flags
 └── shared/
-    ├── questions.js                16 question types
+    ├── questions.js                16 question types with context filters
     └── scoringRules.js             timing bands and multipliers
 ```
 
@@ -139,10 +153,15 @@ cp .env.example .env
 # Fill in TXLINE_API_TOKEN, TXLINE_JWT, GROQ_API_KEY, ELEVENLABS_API_KEY
 npm install
 node backend/server.js
-
-# Demo/replay mode
-SOURCE_MODE=replay node backend/server.js
 ```
+
+To rebuild the demo replay from the most recent finished match:
+
+```bash
+cd backend/replay/recordings && python3 build_replay.py
+```
+
+The demo is accessible in-app via the **Watch Demo Match** button — no separate mode needed.
 
 ---
 
