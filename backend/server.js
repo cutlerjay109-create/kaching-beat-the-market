@@ -147,7 +147,7 @@ async function handleOdds(oddsData) {
   };
 
   const shift = calcShift(previousMatchState, currentMatchState);
-  if (shift > 0.02 && previousMatchState && connectedPlayers > 0) {
+  if (shift > 0.05 && previousMatchState && connectedPlayers > 0 && currentMatchState.inRunning) {
     const before = Math.round((previousMatchState.homeProb || 0.5) * 100);
     const after  = Math.round((currentMatchState.homeProb  || 0.5) * 100);
     console.log(`[odds] shift: ${before}% -> ${after}%`);
@@ -270,6 +270,14 @@ async function handleScores(scoresData) {
     matchTime, period, inRunning,
   };
 
+  // Reset goal counters when a new match starts (different fixture)
+  const currentFid = currentMatchState && currentMatchState.fixtureId;
+  if (currentFid && fid && String(currentFid) !== String(fid)) {
+    maxHomeGoals = 0;
+    maxAwayGoals = 0;
+    console.log("[scores] new fixture detected — resetting goal counters");
+  }
+
   const cleanHome = Math.max(score.home || 0, maxHomeGoals);
   const cleanAway = Math.max(score.away || 0, maxAwayGoals);
   if (cleanHome > maxHomeGoals || cleanAway > maxAwayGoals) {
@@ -277,7 +285,7 @@ async function handleScores(scoresData) {
     const scoreStr    = `${cleanHome}-${cleanAway}`;
     console.log(`[scores] GOAL! ${scoringTeam} ${scoreStr}`);
     react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
-      .then(r => r && push.pushPundit(r));
+      .then(r => r && push.pushPundit(r, demoSockets));
     maxHomeGoals = cleanHome;
     maxAwayGoals = cleanAway;
   }
@@ -322,7 +330,7 @@ async function resolveOpenPredictions() {
     react({ type: "prediction_result", data: {
       correct: result.correct, timingLabel: scoreResult.timingLabel,
       secondsBefore: result.secondsBefore, question: question.text, answer: pred.answer,
-    }}).then(r => r && push.pushPundit(r));
+    }}).then(r => r && push.pushPundit(r, demoSockets));
 
     const top = await getTopPlayers(20);
     push.pushLeaderboard(top);
@@ -639,7 +647,7 @@ setInterval(async () => {
     awayProb: Math.round((currentMatchState.awayProb || 0.5) * 100),
     score:    `${(currentMatchState.score || {}).home || 0}-${(currentMatchState.score || {}).away || 0}`,
     period:   currentMatchState.period || "",
-  }}).then(r => r && push.pushPundit(r));
+  }}).then(r => r && push.pushPundit(r, demoSockets));
 }, 30000);
 
 server.listen(PORT, () => {

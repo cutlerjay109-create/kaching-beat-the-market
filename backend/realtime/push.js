@@ -33,9 +33,15 @@ function pushResult(result) {
 }
 
 // Push a pundit reaction (text + audio) to all players
-function pushPundit(reaction) {
+function pushPundit(reaction, skipSockets) {
   if (!io) return;
-  io.emit("pundit_reaction", reaction);
+  if (skipSockets && skipSockets.size > 0) {
+    io.sockets.sockets.forEach((s) => {
+      if (!skipSockets.has(s.id)) s.emit("pundit_reaction", reaction);
+    });
+  } else {
+    io.emit("pundit_reaction", reaction);
+  }
 }
 
 // Push leaderboard update
