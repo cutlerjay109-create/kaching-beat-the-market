@@ -135,6 +135,14 @@ async function handleOdds(oddsData) {
   }
   const fixture = fixtureNames[prob.fixtureId] || {};
 
+  const prevPeriod = (currentMatchState || {}).period || "PRE";
+  const prevTime   = (currentMatchState || {}).matchTime || 0;
+  // If odds say inRunning but period is still PRE, infer period from match time
+  let inferredPeriod = prevPeriod;
+  if (prob.inRunning && (prevPeriod === "PRE" || !prevPeriod)) {
+    inferredPeriod = prevTime <= 46 ? "1H" : "2H";
+  }
+
   currentMatchState = {
     ...(currentMatchState || {}),
     homeProb:  prob.home,
@@ -144,6 +152,7 @@ async function handleOdds(oddsData) {
     fixtureId: prob.fixtureId,
     oddsTs:      prob.ts,
     oddsShiftTs: prob.ts,
+    period:    inferredPeriod,
     homeTeam:  (currentMatchState || {}).homeTeam || fixture.home || "Home",
     awayTeam:  (currentMatchState || {}).awayTeam || fixture.away || "Away",
   };
