@@ -35,6 +35,28 @@ function onMatchState(matchState) {
   state.matchState = matchState;
   const reconnEl = document.getElementById("reconnecting");
   if (reconnEl) reconnEl.classList.remove("visible");
+
+  // If this is a countdown push and we already have real team names, keep them
+  if (matchState.countdown != null && !matchState.inRunning && state.liveHomeTeam) {
+    matchState = {
+      ...matchState,
+      homeTeam: state.liveHomeTeam,
+      awayTeam: state.liveAwayTeam,
+    };
+  }
+
+  // Track real team names from live data
+  if (matchState.inRunning && matchState.homeTeam && matchState.homeTeam !== "Home") {
+    state.liveHomeTeam = matchState.homeTeam;
+    state.liveAwayTeam = matchState.awayTeam;
+  }
+
+  // Reset live teams when match ends
+  if (matchState.period === "FT") {
+    state.liveHomeTeam = null;
+    state.liveAwayTeam = null;
+  }
+
   UI.updateMatchView(matchState);
   UI.updateProbabilityBar(
     matchState.homeProb,

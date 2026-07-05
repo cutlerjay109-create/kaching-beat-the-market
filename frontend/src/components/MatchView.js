@@ -1,15 +1,11 @@
-// MatchView.js — teams, score, match time, flags, badge, countdown.
-
+// MatchView.js
 function formatCountdown(secs) {
   if (secs <= 0) return "STARTING NOW";
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = secs % 60;
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
   if (h > 0) return h + "h " + m + "m";
   if (m > 0) return m + "m " + s + "s";
   return s + "s";
 }
-
 function updateMatchView(state) {
   const homeEl     = document.getElementById("home-team");
   const awayEl     = document.getElementById("away-team");
@@ -22,21 +18,17 @@ function updateMatchView(state) {
   const probHome   = document.getElementById("prob-home-label");
   const probAway   = document.getElementById("prob-away-label");
   const liveBadge  = document.querySelector(".live-badge");
-
   const homeTeam = state.homeTeam || "Home";
   const awayTeam = state.awayTeam || "Away";
   const mode     = state._mode   || "live";
-
   if (homeEl)     homeEl.textContent     = homeTeam;
   if (awayEl)     awayEl.textContent     = awayTeam;
-  if (homeFlagEl) homeFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(homeTeam) : "⚽";
-  if (awayFlagEl) awayFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(awayTeam) : "⚽";
+  if (homeFlagEl) homeFlagEl.textContent = typeof getFlag === "function" ? getFlag(homeTeam) : "⚽";
+  if (awayFlagEl) awayFlagEl.textContent = typeof getFlag === "function" ? getFlag(awayTeam) : "⚽";
   if (scoreHome)  scoreHome.textContent  = state.score ? state.score.home : 0;
   if (scoreAway)  scoreAway.textContent  = state.score ? state.score.away : 0;
   if (probHome)   probHome.textContent   = homeTeam;
   if (probAway)   probAway.textContent   = awayTeam;
-
-  // Badge
   if (liveBadge) {
     if (mode === "replay") {
       liveBadge.textContent = "⏺ DEMO";
@@ -49,8 +41,6 @@ function updateMatchView(state) {
       liveBadge.style.cssText = "display:flex;align-items:center;gap:0.4rem;background:rgba(90,114,150,0.1);border:1px solid rgba(90,114,150,0.3);border-radius:99px;padding:0.25rem 0.65rem;font-size:0.7rem;font-weight:600;letter-spacing:2px;color:#5a7296;text-transform:uppercase;";
     }
   }
-
-  // Time display
   if (state.countdown != null && state.countdown > 0 && !state.inRunning) {
     if (timeEl)   timeEl.textContent   = formatCountdown(state.countdown);
     if (periodEl) periodEl.textContent = "NEXT";

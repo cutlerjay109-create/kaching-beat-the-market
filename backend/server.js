@@ -85,7 +85,11 @@ async function handleOdds(oddsData) {
   if (!prob) return;
   if (FEATURED_FIXTURE_ID && String(prob.fixtureId) !== FEATURED_FIXTURE_ID) return;
 
-  previousMatchState = currentMatchState ? { ...currentMatchState } : null;
+  // Only track previous state when match is actually running
+  // Avoids fake shifts caused by countdown state overwriting real odds
+  if (currentMatchState && currentMatchState.inRunning) {
+    previousMatchState = { ...currentMatchState };
+  }
   const fixture = fixtureNames[prob.fixtureId] || {};
 
   currentMatchState = {
@@ -113,7 +117,7 @@ async function handleOdds(oddsData) {
 
   push.pushMatchState({ ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
 
-  if (connectedPlayers > 0) {
+  if (connectedPlayers > 0 && currentMatchState.inRunning) {
     const question = maybeAskQuestion(currentMatchState);
     if (question) {
       push.pushQuestion(question);
