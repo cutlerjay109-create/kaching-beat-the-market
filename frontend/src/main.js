@@ -77,8 +77,8 @@ function onQuestion(question) {
 }
 
 function onPredictionResult(result) {
-  state.score  = result.newScore  || state.score;
-  state.streak = result.newStreak || 0;
+  state.score  = result.newScore  != null ? result.newScore  : state.score;
+  state.streak = result.newStreak != null ? result.newStreak : state.streak;
   UI.updateStreakDisplay(state.score, state.streak, state.rank);
   UI.showResult(result);
 }
