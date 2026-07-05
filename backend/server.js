@@ -290,6 +290,10 @@ async function handleScores(scoresData) {
   } else if (inRunning && period === "PRE") {
     period = "1H";
   }
+  // Detect halftime: clock stuck at 45 and not yet in 2H
+  if (matchTime === 45 && period === "1H" && !inRunning) {
+    period = "HT";
+  }
 
   currentMatchState = {
     ...(currentMatchState || {}),

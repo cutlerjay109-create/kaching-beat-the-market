@@ -74,6 +74,8 @@ function maybeAskQuestion(matchState) {
   // Do not ask during halftime, extra time or after match ends
   if (matchState.period === "HT") return null;
   if (matchState.period === "FT") return null;
+  // Stop questions if match time is exactly 45 (halftime clock reset) or 0
+  if (minute === 45 && matchState.period !== "2H") return null;
 
   const valid = getValidQuestions(matchState);
   if (!valid.length) return null;
