@@ -502,18 +502,29 @@ io.on("connection", (socket) => {
           return true;
         });
         if (valid.length) {
-          const q = valid[Math.floor(Math.random() * valid.length)];
-          demoQuestion = q;
+          const q        = valid[Math.floor(Math.random() * valid.length)];
           const windowMs = 15000;
+          const askedAt  = now;
+          const expiresAt = now + windowMs;
+          // Store askedAt and expiresAt on the question so resolver can use them
+          demoQuestion = { ...q, askedAt, expiresAt };
           console.log("[demo] asking:", q.text);
           socket.emit("new_question", {
             id: q.id, text: q.text, type: q.type,
-            windowMs, expiresAt: now + windowMs,
+            windowMs, expiresAt,
           });
           react({ type: "question_asked", data: { question: q.text } })
             .then(r => r && socket.emit("pundit_reaction", r));
           // Auto-expire question after window
-          setTimeout(() => { demoQuestion = null; }, windowMs);
+          setTimeout(() => {
+            if (demoQuestion && demoQuestion.id === q.id) {
+              demoQuestion = null;
+              // If no prediction was submitted, just hide the card
+              if (!demoPrediction) {
+                socket.emit("question_expired", { id: q.id });
+              }
+            }
+          }, windowMs);
         }
       }
     }

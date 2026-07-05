@@ -47,5 +47,8 @@ function initSocket(handlers) {
   socket.on("demo_complete", (data) => {
     if (handlers.onDemoComplete) handlers.onDemoComplete(data);
   });
+  socket.on("question_expired", () => {
+    if (handlers.onQuestionExpired) handlers.onQuestionExpired();
+  });
   return socket;
 }

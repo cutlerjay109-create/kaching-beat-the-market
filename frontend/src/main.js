@@ -165,6 +165,7 @@ function initSocketConnection() {
     onReconnecting:     onReconnecting,
     onDisconnect:       onDisconnect,
     onDemoComplete:     onDemoComplete,
+    onQuestionExpired:  () => UI.hidePredictionCard(),
   });
 }
 
