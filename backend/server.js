@@ -343,8 +343,22 @@ io.on("connection", (socket) => {
 
   startReplayIfNeeded(handleOdds, handleScores);
 
-  if (currentMatchState) {
+  if (currentMatchState && currentMatchState.inRunning) {
+    // Live match — send immediately
     socket.emit("match_state", { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
+  } else {
+    // No live match — send next fixture countdown instantly so screen is never blank
+    const next = getNextUpcoming();
+    if (next) {
+      const secsUntil = Math.max(0, Math.floor((next.ts - Date.now()) / 1000));
+      socket.emit("match_state", {
+        homeTeam: next.home, awayTeam: next.away,
+        score: { home: 0, away: 0 }, matchTime: 0,
+        period: "PRE", inRunning: false,
+        countdown: secsUntil,
+        _mode: process.env.SOURCE_MODE || "live",
+      });
+    }
   }
 
   socket.on("submit_prediction", async (data) => {
