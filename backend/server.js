@@ -349,6 +349,7 @@ setInterval(async () => {
 // ── COUNTDOWN (fully automatic from TxLINE fixture data) ────────────────────
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
+  if (process.env.SOURCE_MODE === "replay") return;
   if (connectedPlayers === 0) return;
   const next = getNextUpcoming();
   if (!next) return;
@@ -365,6 +366,7 @@ setInterval(() => {
 let lastCommentaryTs = 0;
 setInterval(async () => {
   if (!currentMatchState || !currentMatchState.inRunning) return;
+  if (currentMatchState.period === "FT") return;
   if (connectedPlayers === 0) return;
   const now = Date.now();
   if (now - lastCommentaryTs < 4 * 60 * 1000) return;
