@@ -122,7 +122,6 @@ kaching-beat-the-market/
 │   ├── replay/
 │   │   ├── replayEngine.js         plays recordings back in real time
 │   │   └── recordings/
-│   │       ├── build_replay.py     fetches latest finished match from TxLINE
 │   │       ├── scores.json         score event recording
 │   │       └── odds.json           odds event recording
 │   ├── game/                       questions, resolver, scoring, probability
@@ -153,12 +152,6 @@ cp .env.example .env
 # Fill in TXLINE_API_TOKEN, TXLINE_JWT, GROQ_API_KEY, ELEVENLABS_API_KEY
 npm install
 node backend/server.js
-```
-
-To rebuild the demo replay from the most recent finished match:
-
-```bash
-cd backend/replay/recordings && python3 build_replay.py
 ```
 
 The demo is accessible in-app via the **Watch Demo Match** button — no separate mode needed.
