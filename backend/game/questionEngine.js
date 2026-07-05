@@ -71,7 +71,8 @@ function maybeAskQuestion(matchState) {
   if (!matchState || !matchState.inRunning) return null;
   if (minute < 1) return null;
 
-  // Do not ask in extra time or after match ends
+  // Do not ask during halftime, extra time or after match ends
+  if (matchState.period === "HT") return null;
   if (matchState.period === "FT") return null;
 
   const valid = getValidQuestions(matchState);

@@ -141,7 +141,8 @@ async function handleOdds(oddsData) {
     drawProb:  prob.draw,
     inRunning: prob.inRunning,
     fixtureId: prob.fixtureId,
-    oddsTs:    prob.ts,
+    oddsTs:      prob.ts,
+    oddsShiftTs: prob.ts,
     homeTeam:  (currentMatchState || {}).homeTeam || fixture.home || "Home",
     awayTeam:  (currentMatchState || {}).awayTeam || fixture.away || "Away",
   };
