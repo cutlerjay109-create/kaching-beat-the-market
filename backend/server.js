@@ -163,10 +163,13 @@ async function handleOdds(oddsData) {
     });
   }
 
-  const liveState = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
-  io.sockets.sockets.forEach((s) => {
-    if (!demoSockets.has(s.id)) s.emit("match_state", liveState);
-  });
+  // Only broadcast to frontend when match is live — pre-match odds update internal state only
+  if (currentMatchState.inRunning) {
+    const liveState = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
+    io.sockets.sockets.forEach((s) => {
+      if (!demoSockets.has(s.id)) s.emit("match_state", liveState);
+    });
+  }
 
   if (connectedPlayers > 0 && currentMatchState.inRunning) {
     const question = maybeAskQuestion(currentMatchState);
