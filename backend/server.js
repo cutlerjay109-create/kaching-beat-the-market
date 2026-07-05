@@ -212,19 +212,35 @@ async function handleScores(scoresData) {
 
   const clock     = scoresData.Clock || {};
   const matchTime = scoresData.match_time != null ? scoresData.match_time
-                  : (clock.Seconds ? Math.floor(clock.Seconds / 60) : (prev.matchTime || 0));
-  const statusId  = scoresData.StatusId || scoresData.status_id;
-  const gameState = (scoresData.GameState || "").toLowerCase();
-  const period    = scoresData.period ||
-                    (statusId === 4 ? "1H" : statusId === 5 ? "HT" :
-                     statusId === 6 ? "2H" : statusId === 7 ? "FT" :
-                     gameState.includes("first") ? "1H" :
-                     gameState.includes("second") ? "2H" :
-                     gameState.includes("half") ? "HT" :
-                     gameState === "inprogress" ? "1H" :
-                     (prev.period || "PRE"));
+                  : (clock.Seconds != null ? Math.floor(clock.Seconds / 60) : (prev.matchTime || 0));
   const inRunning = scoresData.inRunning != null ? scoresData.inRunning
                   : (clock.Running != null ? clock.Running : (prev.inRunning || false));
+  const statusId  = scoresData.StatusId || scoresData.status_id;
+  const gameState = (scoresData.GameState || "").toLowerCase();
+  let period = scoresData.period || prev.period || "PRE";
+  if (clock.Period != null) {
+    if      (clock.Period === 1) period = "1H";
+    else if (clock.Period === 2) period = "2H";
+    else if (clock.Period === 3) period = "ET1";
+    else if (clock.Period === 4) period = "ET2";
+  } else if (statusId != null) {
+    if      (statusId === 4)  period = "1H";
+    else if (statusId === 5)  period = "HT";
+    else if (statusId === 6)  period = "2H";
+    else if (statusId === 7)  period = "FT";
+    else if (statusId === 31) period = "ET1";
+    else if (statusId === 32) period = "ET2";
+  } else if (gameState) {
+    if      (gameState.includes("first_half")  || gameState === "1h") period = "1H";
+    else if (gameState.includes("second_half") || gameState === "2h") period = "2H";
+    else if (gameState.includes("half_time")   || gameState === "ht") period = "HT";
+    else if (gameState.includes("full_time")   || gameState === "ft") period = "FT";
+    else if (gameState === "inprogress" || gameState === "live") {
+      period = (matchTime <= 46) ? "1H" : "2H";
+    }
+  } else if (inRunning) {
+    period = (matchTime <= 46) ? "1H" : "2H";
+  }
 
   currentMatchState = {
     ...(currentMatchState || {}),

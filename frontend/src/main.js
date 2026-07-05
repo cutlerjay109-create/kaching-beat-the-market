@@ -68,6 +68,7 @@ function onMatchState(matchState) {
 
 function onQuestion(question) {
   UI.showPredictionCard(question, (answer) => {
+    if (UI.flushAudioQueue) UI.flushAudioQueue();
     socket.emit("submit_prediction", {
       sessionId: state.sessionId,
       answer,
