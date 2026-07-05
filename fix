@@ -1,228 +1,158 @@
 #!/usr/bin/env python3
-"""
-fix_kaching.py — applies the outstanding fixes to kaching-beat-the-market.
+# live_fix.py — image-based flags (render everywhere) + live fixture pinning.
+import os, re, sys
 
-Run from the repo root:  python3 fix_kaching.py
+if not os.path.exists("package.json"):
+    sys.exit("Run from the repo root (no package.json here).")
 
-Fixes:
-  1. Adds `uuid` to package.json dependencies + an engines field (Node >=18).
-  2. questionEngine.js: treats question.window as SECONDS (was used as ms),
-     so live-mode questions no longer expire in ~600ms.
-  3. resolver.js: "stay/hold" questions (no_goals, probability_hold,
-     probability_tight) no longer resolve instantly as YES. They resolve
-     early as NO only if the condition breaks, otherwise at window expiry.
-  4. Fills in the empty .env.example with the required variables.
+def backup(p):
+    b = p + ".bak2"
+    if not os.path.exists(b) and os.path.exists(p):
+        open(b, "w", encoding="utf-8").write(open(p, encoding="utf-8").read())
 
-Every edited file is backed up to <file>.bak first. Safe to re-run.
-"""
-
-import json
-import os
-import re
-import sys
-
-ROOT = os.getcwd()
-
-if not os.path.exists(os.path.join(ROOT, "package.json")):
-    sys.exit("ERROR: run this from the repo root (no package.json here).")
-
-
-def backup(path):
-    bak = path + ".bak"
-    if not os.path.exists(bak):
-        with open(path, "r", encoding="utf-8") as f:
-            data = f.read()
-        with open(bak, "w", encoding="utf-8") as f:
-            f.write(data)
-
-
-def read(path):
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
-
-
-def write(path, text):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(text)
-
-
-changed = []
-skipped = []
+changed, skipped = [], []
 
 # ---------------------------------------------------------------------------
-# 1. package.json — add uuid + engines
+# 1. Rewrite flags.js -> name maps to ISO code, getFlag() returns an <img>.
 # ---------------------------------------------------------------------------
-pkg_path = os.path.join(ROOT, "package.json")
-pkg = json.loads(read(pkg_path))
-deps = pkg.get("dependencies", {})
-touched_pkg = False
+FLAGS_JS = r'''// frontend/src/services/flags.js — image flags (flagcdn.com), render on every OS.
+// Emoji flags don't render on Windows/many Linux setups, so we use <img> instead.
 
-if "uuid" not in deps:
-    deps["uuid"] = "^9.0.1"
-    pkg["dependencies"] = dict(sorted(deps.items()))
-    touched_pkg = True
+const FLAG_CODES = {
+  // CONMEBOL
+  "Argentina":"ar","Brazil":"br","Colombia":"co","Uruguay":"uy","Ecuador":"ec",
+  "Paraguay":"py","Venezuela":"ve","Chile":"cl","Bolivia":"bo","Peru":"pe",
+  // UEFA
+  "France":"fr","England":"gb-eng","Spain":"es","Portugal":"pt","Germany":"de",
+  "Netherlands":"nl","Belgium":"be","Switzerland":"ch","Croatia":"hr","Austria":"at",
+  "Norway":"no","Scotland":"gb-sct","Wales":"gb-wls","Denmark":"dk","Poland":"pl",
+  "Serbia":"rs","Sweden":"se","Hungary":"hu","Romania":"ro","Ukraine":"ua",
+  "Turkey":"tr","Turkiye":"tr","Czech Republic":"cz","Slovakia":"sk",
+  "Bosnia and Herzegovina":"ba","Albania":"al","Slovenia":"si","Greece":"gr","Georgia":"ge",
+  // CONCACAF
+  "USA":"us","United States":"us","Canada":"ca","Mexico":"mx","Costa Rica":"cr",
+  "Honduras":"hn","Panama":"pa","Jamaica":"jm","Cuba":"cu","Trinidad and Tobago":"tt",
+  "Curacao":"cw","Cura\u00e7ao":"cw","El Salvador":"sv","Guatemala":"gt","Haiti":"ht",
+  // CAF
+  "Morocco":"ma","Senegal":"sn","Egypt":"eg","Nigeria":"ng","Ghana":"gh","Cameroon":"cm",
+  "Ivory Coast":"ci","Algeria":"dz","Tunisia":"tn","Mali":"ml","South Africa":"za",
+  "Congo DR":"cd","DR Congo":"cd","Democratic Republic of Congo":"cd",
+  "Cape Verde":"cv","Cabo Verde":"cv","Zambia":"zm","Tanzania":"tz","Uganda":"ug",
+  // AFC
+  "Japan":"jp","South Korea":"kr","Korea Republic":"kr","Saudi Arabia":"sa","Iran":"ir",
+  "Australia":"au","Qatar":"qa","Iraq":"iq","Jordan":"jo","Uzbekistan":"uz","China":"cn",
+  "India":"in","Vietnam":"vn","Thailand":"th","Myanmar":"mm","Indonesia":"id",
+  "Philippines":"ph","Bahrain":"bh","UAE":"ae","United Arab Emirates":"ae","Oman":"om",
+  "Kuwait":"kw","Palestine":"ps","Lebanon":"lb",
+  // OFC
+  "New Zealand":"nz","Fiji":"fj","Papua New Guinea":"pg","Solomon Islands":"sb","Vanuatu":"vu",
+};
 
-if "engines" not in pkg:
-    pkg["engines"] = {"node": ">=18"}
-    touched_pkg = True
-
-if touched_pkg:
-    backup(pkg_path)
-    write(pkg_path, json.dumps(pkg, indent=2) + "\n")
-    changed.append("package.json (added uuid dependency + engines Node>=18)")
-else:
-    skipped.append("package.json (uuid + engines already present)")
-
-# ---------------------------------------------------------------------------
-# 2. questionEngine.js — window is seconds, not ms
-# ---------------------------------------------------------------------------
-qe_path = os.path.join(ROOT, "backend", "game", "questionEngine.js")
-qe = read(qe_path)
-old_win = "(question.window || 10 * 60 * 1000)"
-new_win = "(question.window ? question.window * 1000 : 10 * 60 * 1000)"
-
-if new_win in qe:
-    skipped.append("questionEngine.js (window units already fixed)")
-elif old_win in qe:
-    backup(qe_path)
-    qe = qe.replace(old_win, new_win)
-    write(qe_path, qe)
-    changed.append("questionEngine.js (window seconds -> ms)")
-else:
-    skipped.append("questionEngine.js (window expression not found — CHECK MANUALLY)")
-
-# ---------------------------------------------------------------------------
-# 3. resolver.js — fix instant-resolve of hold/stay questions
-# ---------------------------------------------------------------------------
-rs_path = os.path.join(ROOT, "backend", "game", "resolver.js")
-rs = read(rs_path)
-
-NEW_RESOLVE = '''// Fields whose YES outcome means "the state HELD for the whole window".
-// These must not resolve early just because the condition is true at the start.
-const HOLD_FIELDS = new Set(["no_goals", "probability_hold", "probability_tight"]);
-
-// Resolve a yes/no prediction against current match state.
-// Returns { resolved: true, correct, secondsBefore, oddsBefore, oddsAfter }
-// or { resolved: false } if not enough data yet.
-function resolve(question, answer, matchStateBefore, matchStateNow) {
-  if (!question || !matchStateNow) return { resolved: false };
-
-  const askedAt  = question.askedAt;
-  const now      = Date.now();
-  const isHold   = HOLD_FIELDS.has(question.field);
-  const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
-  const expired  = now >= question.expiresAt;
-
-  let resolvedNow = false;
-  let conditionMet;
-
-  if (isHold) {
-    // "stays" question: YES wins only if it held all the way to expiry.
-    if (!stillMet) {            // hold broke early -> resolve now as NO
-      resolvedNow  = true;
-      conditionMet = false;
-    } else if (expired) {       // held the whole window -> YES
-      resolvedNow  = true;
-      conditionMet = true;
-    }
-  } else {
-    // "happens" question: YES wins as soon as it happens.
-    if (stillMet) {             // event occurred -> resolve now as YES
-      resolvedNow  = true;
-      conditionMet = true;
-    } else if (expired) {       // never happened -> NO
-      resolvedNow  = true;
-      conditionMet = false;
-    }
-  }
-
-  if (!resolvedNow) return { resolved: false };
-
-  const correct = (answer === "yes") === conditionMet;
-
-  // How many seconds before the odds moved did the player call it
-  const oddsShiftTs   = matchStateNow.oddsShiftTs || now;
-  const secondsBefore = Math.max(0, Math.round((oddsShiftTs - askedAt) / 1000));
-
-  closeQuestion();
-
-  return {
-    resolved:     true,
-    correct,
-    conditionMet,
-    secondsBefore,
-    oddsBefore:   matchStateBefore ? matchStateBefore.homeProb : null,
-    oddsAfter:    matchStateNow    ? matchStateNow.homeProb    : null,
-  };
+function _codeFor(teamName) {
+  if (!teamName) return null;
+  if (FLAG_CODES[teamName]) return FLAG_CODES[teamName];
+  const lower = teamName.trim().toLowerCase();
+  const exact = Object.keys(FLAG_CODES).find(k => k.toLowerCase() === lower);
+  if (exact) return FLAG_CODES[exact];
+  // conservative partial: a known name fully contained in the feed's name
+  const part = Object.keys(FLAG_CODES).find(k => lower.includes(k.toLowerCase()));
+  return part ? FLAG_CODES[part] : null;
 }
 
+// Returns an <img> tag string (or a ball emoji if the team is unknown).
+function getFlag(teamName) {
+  const code = _codeFor(teamName);
+  if (!code) return "\u26bd";
+  const url = "https://flagcdn.com/" + code + ".svg";
+  return '<img src="' + url + '" alt="' + (teamName || "") +
+         '" loading="lazy" ' +
+         'style="width:32px;height:22px;border-radius:3px;object-fit:cover;' +
+         'vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,0.15);">';
+}
 '''
 
-if "HOLD_FIELDS" in rs:
-    skipped.append("resolver.js (already patched)")
+fp = "frontend/src/services/flags.js"
+cur = open(fp, encoding="utf-8").read() if os.path.exists(fp) else ""
+if "flagcdn.com" in cur:
+    skipped.append("flags.js (already image-based)")
 else:
-    # Replace everything from `function resolve(question` up to the blank
-    # line before `function _conditionMet`.
-    pattern = re.compile(
-        r"(?:// Resolve a yes/no[^\n]*\n(?://[^\n]*\n)*)?"
-        r"function resolve\(question.*?\n\}\n\n(?=function _conditionMet)",
-        re.S,
-    )
-    new_rs, n = pattern.subn(NEW_RESOLVE, rs)
-    if n == 1:
-        backup(rs_path)
-        write(rs_path, new_rs)
-        changed.append("resolver.js (hold/stay questions no longer resolve instantly)")
+    backup(fp)
+    open(fp, "w", encoding="utf-8").write(FLAGS_JS)
+    changed.append("flags.js (emoji -> image flags)")
+
+# ---------------------------------------------------------------------------
+# 2. MatchView.js — flags are now HTML, use innerHTML not textContent.
+# ---------------------------------------------------------------------------
+mv = "frontend/src/components/MatchView.js"
+t = open(mv, encoding="utf-8").read()
+before = t
+t = t.replace(
+    'if (homeFlagEl) homeFlagEl.textContent = typeof getFlag === "function" ? getFlag(homeTeam) : "\u26bd";',
+    'if (homeFlagEl) homeFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(homeTeam) : "\u26bd";')
+t = t.replace(
+    'if (awayFlagEl) awayFlagEl.textContent = typeof getFlag === "function" ? getFlag(awayTeam) : "\u26bd";',
+    'if (awayFlagEl) awayFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(awayTeam) : "\u26bd";')
+if t == before:
+    if "innerHTML = typeof getFlag" in before:
+        skipped.append("MatchView.js (already innerHTML)")
     else:
-        skipped.append(
-            "resolver.js (resolve() block not matched, n=%d — CHECK MANUALLY)" % n
-        )
-
-# ---------------------------------------------------------------------------
-# 4. .env.example — fill in required vars if empty
-# ---------------------------------------------------------------------------
-env_path = os.path.join(ROOT, ".env.example")
-ENV_TEMPLATE = """# Copy to .env and fill in real values. Never commit .env.
-
-# Server
-PORT=3000
-SOURCE_MODE=live            # live | replay
-
-# TxLINE (live odds/scores feed)
-TXLINE_API_TOKEN=
-TXLINE_JWT=                 # auto-refreshed at runtime; can start blank
-TXLINE_API_ORIGIN=https://txline.txodds.com
-TXLINE_API_BASE=https://txline.txodds.com/api
-
-# Groq (pundit text)
-GROQ_API_KEY=
-
-# ElevenLabs (pundit voice)
-ELEVENLABS_API_KEY=
-ELEVENLABS_VOICE_ID=onwK4e9ZLuTAKqWW03F9
-
-# Solana
-SOLANA_NETWORK=mainnet-beta
-SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-"""
-
-existing_env = read(env_path) if os.path.exists(env_path) else ""
-if existing_env.strip():
-    skipped.append(".env.example (already has content — left untouched)")
+        skipped.append("MatchView.js (flag lines not found — CHECK MANUALLY)")
 else:
-    if os.path.exists(env_path):
-        backup(env_path)
-    write(env_path, ENV_TEMPLATE)
-    changed.append(".env.example (populated required vars)")
+    backup(mv)
+    open(mv, "w", encoding="utf-8").write(t)
+    changed.append("MatchView.js (textContent -> innerHTML for flags)")
 
 # ---------------------------------------------------------------------------
-# Report
+# 3. server.js — opt-in fixture pinning via FEATURED_FIXTURE_ID.
 # ---------------------------------------------------------------------------
+sv = "backend/server.js"
+s = open(sv, encoding="utf-8").read()
+if "FEATURED_FIXTURE_ID" in s:
+    skipped.append("server.js (fixture pinning already present)")
+else:
+    ok = True
+    anchor_var = "let connectedPlayers   = 0;"
+    if anchor_var in s:
+        s = s.replace(anchor_var, anchor_var +
+            "\nconst FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID"
+            " ? String(process.env.FEATURED_FIXTURE_ID) : null;")
+    else:
+        ok = False
+    anchor_odds = "  const prob = extractProbability(oddsData);\n  if (!prob) return;"
+    if anchor_odds in s:
+        s = s.replace(anchor_odds, anchor_odds +
+            "\n  if (FEATURED_FIXTURE_ID && String(prob.fixtureId) !== FEATURED_FIXTURE_ID) return;")
+    else:
+        ok = False
+    anchor_scores = "  const fid     = scoresData.FixtureId || scoresData.fixture_id;"
+    if anchor_scores in s:
+        s = s.replace(anchor_scores, anchor_scores +
+            "\n  if (FEATURED_FIXTURE_ID && fid != null && String(fid) !== FEATURED_FIXTURE_ID) return;")
+    else:
+        ok = False
+    if ok:
+        backup(sv)
+        open(sv, "w", encoding="utf-8").write(s)
+        changed.append("server.js (opt-in FEATURED_FIXTURE_ID pinning)")
+    else:
+        skipped.append("server.js (an anchor was not found — CHECK MANUALLY)")
+
+# ---------------------------------------------------------------------------
+# 4. .env.example — document FEATURED_FIXTURE_ID.
+# ---------------------------------------------------------------------------
+ev = ".env.example"
+if os.path.exists(ev):
+    e = open(ev, encoding="utf-8").read()
+    if "FEATURED_FIXTURE_ID" not in e:
+        backup(ev)
+        e += "\n# Pin the app to ONE match (get the id from: node explore-api.js).\n# Leave blank to auto-follow whatever fixture last emitted.\nFEATURED_FIXTURE_ID=\n"
+        open(ev, "w", encoding="utf-8").write(e)
+        changed.append(".env.example (documented FEATURED_FIXTURE_ID)")
+    else:
+        skipped.append(".env.example (already documents FEATURED_FIXTURE_ID)")
+
 print("\n=== CHANGED ===")
-for c in changed:
-    print("  +", c)
+[print("  +", c) for c in changed]
 print("\n=== SKIPPED ===")
-for s in skipped:
-    print("  -", s)
-print("\nBackups written as <file>.bak (only on first run).")
-print("Next: run  npm install  (to pull uuid), then start the server.")
+[print("  -", s) for s in skipped]
+print("\nBackups: <file>.bak2. Set FEATURED_FIXTURE_ID in .env to pin one match.")

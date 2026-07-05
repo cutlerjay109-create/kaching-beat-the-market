@@ -56,7 +56,6 @@ let openPredictions    = {};
 let maxHomeGoals       = 0;
 let maxAwayGoals       = 0;
 let connectedPlayers   = 0;
-const FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID ? String(process.env.FEATURED_FIXTURE_ID) : null;
 
 // Fixture names lookup
 const fixtureNames = {};
@@ -83,7 +82,6 @@ setTimeout(loadFixtureNames, 3000);
 async function handleOdds(oddsData) {
   const prob = extractProbability(oddsData);
   if (!prob) return;
-  if (FEATURED_FIXTURE_ID && String(prob.fixtureId) !== FEATURED_FIXTURE_ID) return;
 
   previousMatchState = currentMatchState ? { ...currentMatchState } : null;
   const fixture = fixtureNames[prob.fixtureId] || {};
@@ -128,7 +126,6 @@ async function handleOdds(oddsData) {
 async function handleScores(scoresData) {
   const prev    = currentMatchState || {};
   const fid     = scoresData.FixtureId || scoresData.fixture_id;
-  if (FEATURED_FIXTURE_ID && fid != null && String(fid) !== FEATURED_FIXTURE_ID) return;
   const fixture = fixtureNames[fid] || {};
 
   const homeTeam = scoresData.home_team || fixture.home || scoresData.Participant1 || prev.homeTeam || "Home";

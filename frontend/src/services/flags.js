@@ -1,132 +1,54 @@
-// frontend/src/services/flags.js — all 48 World Cup 2026 teams + common variations.
+// frontend/src/services/flags.js — image flags (flagcdn.com), render on every OS.
+// Emoji flags don't render on Windows/many Linux setups, so we use <img> instead.
 
-const FLAGS = {
-  // ── CONMEBOL (South America) ──
-  "Argentina":              "🇦🇷",
-  "Brazil":                 "🇧🇷",
-  "Colombia":               "🇨🇴",
-  "Uruguay":                "🇺🇾",
-  "Ecuador":                "🇪🇨",
-  "Paraguay":               "🇵🇾",
-  "Venezuela":              "🇻🇪",
-  "Chile":                  "🇨🇱",
-  "Bolivia":                "🇧🇴",
-  "Peru":                   "🇵🇪",
-
-  // ── UEFA (Europe) ──
-  "France":                 "🇫🇷",
-  "England":                "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-  "Spain":                  "🇪🇸",
-  "Portugal":               "🇵🇹",
-  "Germany":                "🇩🇪",
-  "Netherlands":            "🇳🇱",
-  "Belgium":                "🇧🇪",
-  "Switzerland":            "🇨🇭",
-  "Croatia":                "🇭🇷",
-  "Austria":                "🇦🇹",
-  "Norway":                 "🇳🇴",
-  "Scotland":               "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-  "Wales":                  "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
-  "Denmark":                "🇩🇰",
-  "Poland":                 "🇵🇱",
-  "Serbia":                 "🇷🇸",
-  "Sweden":                 "🇸🇪",
-  "Hungary":                "🇭🇺",
-  "Romania":                "🇷🇴",
-  "Ukraine":                "🇺🇦",
-  "Turkey":                 "🇹🇷",
-  "Turkiye":                "🇹🇷",
-  "Czech Republic":         "🇨🇿",
-  "Slovakia":               "🇸🇰",
-  "Bosnia and Herzegovina": "🇧🇦",
-  "Albania":                "🇦🇱",
-  "Slovenia":               "🇸🇮",
-  "Greece":                 "🇬🇷",
-  "Georgia":                "🇬🇪",
-
-  // ── CONCACAF (North/Central America & Caribbean) ──
-  "USA":                    "🇺🇸",
-  "United States":          "🇺🇸",
-  "Canada":                 "🇨🇦",
-  "Mexico":                 "🇲🇽",
-  "Costa Rica":             "🇨🇷",
-  "Honduras":               "🇭🇳",
-  "Panama":                 "🇵🇦",
-  "Jamaica":                "🇯🇲",
-  "Cuba":                   "🇨🇺",
-  "Trinidad and Tobago":    "🇹🇹",
-  "Curacao":                "🇨🇼",
-  "Curaçao":                "🇨🇼",
-  "El Salvador":            "🇸🇻",
-  "Guatemala":              "🇬🇹",
-  "Haiti":                  "🇭🇹",
-
-  // ── CAF (Africa) ──
-  "Morocco":                "🇲🇦",
-  "Senegal":                "🇸🇳",
-  "Egypt":                  "🇪🇬",
-  "Nigeria":                "🇳🇬",
-  "Ghana":                  "🇬🇭",
-  "Cameroon":               "🇨🇲",
-  "Ivory Coast":            "🇨🇮",
-  "Algeria":                "🇩🇿",
-  "Tunisia":                "🇹🇳",
-  "Mali":                   "🇲🇱",
-  "South Africa":           "🇿🇦",
-  "Congo DR":               "🇨🇩",
-  "DR Congo":               "🇨🇩",
-  "Democratic Republic of Congo": "🇨🇩",
-  "Cape Verde":             "🇨🇻",
-  "Cabo Verde":             "🇨🇻",
-  "Zambia":                 "🇿🇲",
-  "Tanzania":               "🇹🇿",
-  "Uganda":                 "🇺🇬",
-
-  // ── AFC (Asia) ──
-  "Japan":                  "🇯🇵",
-  "South Korea":            "🇰🇷",
-  "Korea Republic":         "🇰🇷",
-  "Saudi Arabia":           "🇸🇦",
-  "Iran":                   "🇮🇷",
-  "Australia":              "🇦🇺",
-  "Qatar":                  "🇶🇦",
-  "Iraq":                   "🇮🇶",
-  "Jordan":                 "🇯🇴",
-  "Uzbekistan":             "🇺🇿",
-  "China":                  "🇨🇳",
-  "India":                  "🇮🇳",
-  "Vietnam":                "🇻🇳",
-  "Thailand":               "🇹🇭",
-  "Myanmar":                "🇲🇲",
-  "Indonesia":              "🇮🇩",
-  "Philippines":            "🇵🇭",
-  "Bahrain":                "🇧🇭",
-  "UAE":                    "🇦🇪",
-  "United Arab Emirates":   "🇦🇪",
-  "Oman":                   "🇴🇲",
-  "Kuwait":                 "🇰🇼",
-  "Palestine":              "🇵🇸",
-  "Lebanon":                "🇱🇧",
-
-  // ── OFC (Oceania) ──
-  "New Zealand":            "🇳🇿",
-  "Fiji":                   "🇫🇯",
-  "Papua New Guinea":       "🇵🇬",
-  "Solomon Islands":        "🇸🇧",
-  "Vanuatu":                "🇻🇺",
+const FLAG_CODES = {
+  // CONMEBOL
+  "Argentina":"ar","Brazil":"br","Colombia":"co","Uruguay":"uy","Ecuador":"ec",
+  "Paraguay":"py","Venezuela":"ve","Chile":"cl","Bolivia":"bo","Peru":"pe",
+  // UEFA
+  "France":"fr","England":"gb-eng","Spain":"es","Portugal":"pt","Germany":"de",
+  "Netherlands":"nl","Belgium":"be","Switzerland":"ch","Croatia":"hr","Austria":"at",
+  "Norway":"no","Scotland":"gb-sct","Wales":"gb-wls","Denmark":"dk","Poland":"pl",
+  "Serbia":"rs","Sweden":"se","Hungary":"hu","Romania":"ro","Ukraine":"ua",
+  "Turkey":"tr","Turkiye":"tr","Czech Republic":"cz","Slovakia":"sk",
+  "Bosnia and Herzegovina":"ba","Albania":"al","Slovenia":"si","Greece":"gr","Georgia":"ge",
+  // CONCACAF
+  "USA":"us","United States":"us","Canada":"ca","Mexico":"mx","Costa Rica":"cr",
+  "Honduras":"hn","Panama":"pa","Jamaica":"jm","Cuba":"cu","Trinidad and Tobago":"tt",
+  "Curacao":"cw","Cura\u00e7ao":"cw","El Salvador":"sv","Guatemala":"gt","Haiti":"ht",
+  // CAF
+  "Morocco":"ma","Senegal":"sn","Egypt":"eg","Nigeria":"ng","Ghana":"gh","Cameroon":"cm",
+  "Ivory Coast":"ci","Algeria":"dz","Tunisia":"tn","Mali":"ml","South Africa":"za",
+  "Congo DR":"cd","DR Congo":"cd","Democratic Republic of Congo":"cd",
+  "Cape Verde":"cv","Cabo Verde":"cv","Zambia":"zm","Tanzania":"tz","Uganda":"ug",
+  // AFC
+  "Japan":"jp","South Korea":"kr","Korea Republic":"kr","Saudi Arabia":"sa","Iran":"ir",
+  "Australia":"au","Qatar":"qa","Iraq":"iq","Jordan":"jo","Uzbekistan":"uz","China":"cn",
+  "India":"in","Vietnam":"vn","Thailand":"th","Myanmar":"mm","Indonesia":"id",
+  "Philippines":"ph","Bahrain":"bh","UAE":"ae","United Arab Emirates":"ae","Oman":"om",
+  "Kuwait":"kw","Palestine":"ps","Lebanon":"lb",
+  // OFC
+  "New Zealand":"nz","Fiji":"fj","Papua New Guinea":"pg","Solomon Islands":"sb","Vanuatu":"vu",
 };
 
+function _codeFor(teamName) {
+  if (!teamName) return null;
+  if (FLAG_CODES[teamName]) return FLAG_CODES[teamName];
+  const lower = teamName.trim().toLowerCase();
+  const exact = Object.keys(FLAG_CODES).find(k => k.toLowerCase() === lower);
+  if (exact) return FLAG_CODES[exact];
+  // conservative partial: a known name fully contained in the feed's name
+  const part = Object.keys(FLAG_CODES).find(k => lower.includes(k.toLowerCase()));
+  return part ? FLAG_CODES[part] : null;
+}
+
+// Returns an <img> tag string (or a ball emoji if the team is unknown).
 function getFlag(teamName) {
-  if (!teamName) return "⚽";
-  // Direct match
-  if (FLAGS[teamName]) return FLAGS[teamName];
-  // Case-insensitive exact match
-  const lower = teamName.toLowerCase();
-  const exactKey = Object.keys(FLAGS).find(k => k.toLowerCase() === lower);
-  if (exactKey) return FLAGS[exactKey];
-  // Partial match — team name contains key or key contains team name
-  const partialKey = Object.keys(FLAGS).find(k =>
-    lower.includes(k.toLowerCase()) || k.toLowerCase().includes(lower)
-  );
-  return partialKey ? FLAGS[partialKey] : "⚽";
+  const code = _codeFor(teamName);
+  if (!code) return "\u26bd";
+  const url = "https://flagcdn.com/" + code + ".svg";
+  return '<img src="' + url + '" alt="' + (teamName || "") +
+         '" loading="lazy" ' +
+         'style="width:32px;height:22px;border-radius:3px;object-fit:cover;' +
+         'vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,0.15);">';
 }

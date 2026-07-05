@@ -29,8 +29,8 @@ function updateMatchView(state) {
 
   if (homeEl)     homeEl.textContent     = homeTeam;
   if (awayEl)     awayEl.textContent     = awayTeam;
-  if (homeFlagEl) homeFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(homeTeam) : "⚽";
-  if (awayFlagEl) awayFlagEl.innerHTML = typeof getFlag === "function" ? getFlag(awayTeam) : "⚽";
+  if (homeFlagEl) homeFlagEl.textContent = typeof getFlag === "function" ? getFlag(homeTeam) : "⚽";
+  if (awayFlagEl) awayFlagEl.textContent = typeof getFlag === "function" ? getFlag(awayTeam) : "⚽";
   if (scoreHome)  scoreHome.textContent  = state.score ? state.score.home : 0;
   if (scoreAway)  scoreAway.textContent  = state.score ? state.score.away : 0;
   if (probHome)   probHome.textContent   = homeTeam;
