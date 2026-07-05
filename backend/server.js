@@ -154,7 +154,12 @@ async function handleOdds(oddsData) {
     react({
       type: "odds_shift",
       data: { team: after > before ? currentMatchState.homeTeam : currentMatchState.awayTeam, before, after },
-    }).then(r => r && push.pushPundit(r));
+    }).then(r => {
+      if (!r) return;
+      io.sockets.sockets.forEach((s) => {
+        if (!demoSockets.has(s.id)) s.emit("pundit_reaction", r);
+      });
+    });
   }
 
   const liveState = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
@@ -165,9 +170,20 @@ async function handleOdds(oddsData) {
   if (connectedPlayers > 0 && currentMatchState.inRunning) {
     const question = maybeAskQuestion(currentMatchState);
     if (question) {
-      push.pushQuestion(question);
+      io.sockets.sockets.forEach((s) => {
+        if (!demoSockets.has(s.id)) s.emit("new_question", {
+          id: question.id, text: question.text, type: question.type,
+          expiresAt: question.expiresAt,
+          windowMs: Math.max(question.expiresAt - Date.now(), 10000),
+        });
+      });
       react({ type: "question_asked", data: { question: question.text } })
-        .then(r => r && push.pushPundit(r));
+        .then(r => {
+          if (!r) return;
+          io.sockets.sockets.forEach((s) => {
+            if (!demoSockets.has(s.id)) s.emit("pundit_reaction", r);
+          });
+        });
     }
   }
 
@@ -443,12 +459,15 @@ setInterval(() => {
   const next = getNextUpcoming();
   if (!next) return;
   const secsUntil = Math.max(0, Math.floor((next.ts - Date.now()) / 1000));
-  push.pushMatchState({
+  const countdownState = {
     homeTeam: next.home, awayTeam: next.away,
     score: { home: 0, away: 0 }, matchTime: 0,
     period: "PRE", inRunning: false,
     countdown: secsUntil,
     _mode: process.env.SOURCE_MODE || "live",
+  };
+  io.sockets.sockets.forEach((s) => {
+    if (!demoSockets.has(s.id)) s.emit("match_state", countdownState);
   });
 }, 5000);
 
