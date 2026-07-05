@@ -396,12 +396,12 @@ io.on("connection", (socket) => {
     let demoPrediction = null;
 
     // Handle prediction submission for demo player
-    socket.on("submit_prediction_demo", async ({ answer }) => {
+    socket.on("submit_prediction_demo", async ({ answer, sessionId: sid }) => {
       if (!demoQuestion) return;
-      // Store the prediction with match state at time of submission
       demoPrediction = {
         question:    demoQuestion,
         answer,
+        sessionId:   sid,
         matchStateBefore: {
           score:       { home: demoLastHome, away: demoLastAway },
           goals:       demoLastHome + demoLastAway,
@@ -468,24 +468,30 @@ io.on("connection", (socket) => {
           const pred = demoPrediction;
           demoPrediction = null;
           const correct  = result.correct;
-          const points   = correct ? Math.round(100 * (1 + Math.min(demoStreak, 4) * 0.25)) : 0;
-          demoScore     += points;
-          demoStreak     = correct ? demoStreak + 1 : 0;
           const label    = correct ? (result.secondsBefore > 120 ? "Way Early" : result.secondsBefore > 60 ? "Early" : "On the Nose") : "Wrong";
-          socket.emit("prediction_result", {
-            predictionId: "demo-pred",
-            correct, points,
-            timingLabel:  label,
-            newScore:     demoScore,
-            newStreak:    demoStreak,
-            question:     pred.question.text,
-            answer:       pred.answer,
+
+          // Save to real DB so score persists across refreshes
+          recordResult(
+            pred.sessionId, "demo-" + Date.now(), correct,
+            result.secondsBefore || 30, result.oddsBefore || 0.5, result.oddsAfter || 0.5
+          ).then(scoreResult => {
+            if (!scoreResult) return;
+            socket.emit("prediction_result", {
+              predictionId: "demo-pred",
+              correct,
+              points:      scoreResult.points,
+              timingLabel: label,
+              newScore:    scoreResult.newScore,
+              newStreak:   scoreResult.newStreak,
+              question:    pred.question.text,
+              answer:      pred.answer,
+            });
+            react({ type: "prediction_result", data: {
+              correct, timingLabel: label,
+              secondsBefore: result.secondsBefore || 30,
+              question: pred.question.text, answer: pred.answer,
+            }}).then(r => r && socket.emit("pundit_reaction", r));
           });
-          react({ type: "prediction_result", data: {
-            correct, timingLabel: label,
-            secondsBefore: result.secondsBefore || 30,
-            question: pred.question.text, answer: pred.answer,
-          }}).then(r => r && socket.emit("pundit_reaction", r));
         }
       }
 
@@ -591,7 +597,19 @@ setInterval(() => {
   if (process.env.SOURCE_MODE === "replay") return;
   if (connectedPlayers === 0) return;
   const next = getNextUpcoming();
-  if (!next) return;
+  if (!next) {
+    // Tournament over — no more matches
+    io.sockets.sockets.forEach((s) => {
+      if (!demoSockets.has(s.id)) s.emit("match_state", {
+        homeTeam: "Tournament", awayTeam: "Complete",
+        score: { home: 0, away: 0 }, matchTime: 0,
+        period: "FT", inRunning: false,
+        countdown: 0,
+        _mode: "live",
+      });
+    });
+    return;
+  }
   const secsUntil = Math.max(0, Math.floor((next.ts - Date.now()) / 1000));
   const countdownState = {
     homeTeam: next.home, awayTeam: next.away,

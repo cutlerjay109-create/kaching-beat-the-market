@@ -71,7 +71,7 @@ function onQuestion(question) {
     if (UI.flushAudioQueue) UI.flushAudioQueue();
     // Use demo event if in demo mode
     if (state.demoMode) {
-      socket.emit("submit_prediction_demo", { answer });
+      socket.emit("submit_prediction_demo", { answer, sessionId: state.sessionId });
     } else {
       socket.emit("submit_prediction", { sessionId: state.sessionId, answer });
     }

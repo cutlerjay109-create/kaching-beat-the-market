@@ -77,8 +77,15 @@ async function clearAllPlayers() {
 
 function save() {
   if (!db) return;
-  const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
+  try {
+    const data = db.export();
+    fs.writeFileSync(DB_PATH, Buffer.from(data));
+  } catch(e) {
+    console.error("[db] SAVE FAILED:", e.message);
+  }
 }
+
+// Auto-save every 30 seconds as a safety net
+setInterval(() => { save(); }, 30000);
 
 module.exports = { getDb, save, clearAllPlayers };
