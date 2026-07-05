@@ -179,10 +179,9 @@ function initAuthScreen() {
   const savedSession  = localStorage.getItem("sessionId");
   const savedNickname = localStorage.getItem("nickname");
   if (savedSession && savedNickname) {
-    // Resume session directly
-    API.startSession(savedSession, savedNickname).then(data => {
-      if (data && data.player && !data._error) {
-        enterGame({ sessionId: data.sessionId || savedSession, player: data.player, rank: data.rank });
+    API.resumeSession(savedSession).then(data => {
+      if (data && data.player) {
+        enterGame({ sessionId: savedSession, player: data.player, rank: data.rank });
       }
     });
   }
