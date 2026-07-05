@@ -56,6 +56,7 @@ let openPredictions    = {};
 let maxHomeGoals       = 0;
 let maxAwayGoals       = 0;
 let connectedPlayers   = 0;
+const demoSockets = new Set(); // sockets currently in demo mode
 const FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID ? String(process.env.FEATURED_FIXTURE_ID) : null;
 
 // ── FIXTURE REGISTRY (live from TxLINE — zero hardcoding) ───────────────────
@@ -156,7 +157,10 @@ async function handleOdds(oddsData) {
     }).then(r => r && push.pushPundit(r));
   }
 
-  push.pushMatchState({ ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
+  const liveState = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
+  io.sockets.sockets.forEach((s) => {
+    if (!demoSockets.has(s.id)) s.emit("match_state", liveState);
+  });
 
   if (connectedPlayers > 0 && currentMatchState.inRunning) {
     const question = maybeAskQuestion(currentMatchState);
@@ -265,7 +269,10 @@ async function handleScores(scoresData) {
   score.away = cleanAway;
   currentMatchState.score = score;
 
-  push.pushMatchState({ ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
+  const liveScoreState = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
+  io.sockets.sockets.forEach((s) => {
+    if (!demoSockets.has(s.id)) s.emit("match_state", liveScoreState);
+  });
   await resolveOpenPredictions();
 }
 
@@ -334,6 +341,7 @@ io.on("connection", (socket) => {
   // Player requests demo replay — plays to this socket only
   socket.on("start_demo", () => {
     console.log("[demo] starting demo replay for:", socket.id);
+    demoSockets.add(socket.id);
     const { replayMatch } = require("./replay/replayEngine");
 
     function sendToSocket(data) {
@@ -408,11 +416,12 @@ io.on("connection", (socket) => {
     replayMatch("odds",   sendOddsToSocket);
 
     // Clean up when socket disconnects
-    socket.once("disconnect", () => clearInterval(demoInterval));
+    socket.once("disconnect", () => { clearInterval(demoInterval); demoSockets.delete(socket.id); });
   });
 
   socket.on("disconnect", () => {
     connectedPlayers = Math.max(0, connectedPlayers - 1);
+    demoSockets.delete(socket.id);
     console.log("[socket] player disconnected:", socket.id);
   });
 });
