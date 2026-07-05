@@ -119,6 +119,13 @@ async function handleOdds(oddsData) {
   if (!prob) return;
   if (FEATURED_FIXTURE_ID && String(prob.fixtureId) !== FEATURED_FIXTURE_ID) return;
 
+  // Only process odds for the next upcoming fixture or a live one
+  // This prevents pre-match odds for future fixtures overwriting the display
+  const next = getNextUpcoming();
+  const isLive = prob.inRunning;
+  const isNext = next && String(prob.fixtureId) === String(next.fixtureId);
+  if (!isLive && !isNext) return;
+
   // Only track previous state when match is actually running
   // Avoids fake shifts caused by countdown state overwriting real odds
   if (currentMatchState && currentMatchState.inRunning) {
@@ -167,6 +174,13 @@ async function handleScores(scoresData) {
   const prev    = currentMatchState || {};
   const fid     = scoresData.FixtureId || scoresData.fixture_id;
   if (FEATURED_FIXTURE_ID && fid != null && String(fid) !== FEATURED_FIXTURE_ID) return;
+
+  // Only process scores for the next upcoming fixture or a live one
+  const next        = getNextUpcoming();
+  const _inRunning  = scoresData.inRunning ||
+                      (scoresData.Clock && scoresData.Clock.Running) || false;
+  const isNext      = next && fid != null && String(fid) === String(next.fixtureId);
+  if (!_inRunning && !isNext) return;
   const fixture = fixtureNames[fid] || {};
 
   const homeTeam = scoresData.home_team || fixture.home || scoresData.Participant1 || prev.homeTeam || "Home";
