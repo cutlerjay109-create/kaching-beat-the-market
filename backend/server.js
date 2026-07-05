@@ -355,49 +355,73 @@ io.on("connection", (socket) => {
   });
 
   // Player requests demo replay — plays Colombia vs Ghana to this socket only
+  // Demo mode — plays Colombia vs Ghana replay to this socket only
+  // Works exactly like SOURCE_MODE=replay but isolated to one player
   socket.on("start_demo", () => {
-    console.log("[demo] starting demo replay for:", socket.id);
+    console.log("[demo] starting demo for:", socket.id);
     demoSockets.add(socket.id);
 
     const { replayMatch }        = require("./replay/replayEngine");
     const { extractProbability } = require("./game/probability");
+    const QUESTIONS              = require("../shared/questions");
+    const { calcPoints }         = require("./game/scoring");
 
-    // Declare all state first so functions can access them
-    let demoHomeProb  = 0.42;
-    let demoAwayProb  = 0.30;
-    let demoLastHome  = 0;
-    let demoLastAway  = 0;
-    let demoMatchTime = 0;
-    let demoPeriod    = "PRE";
-    let demoLastQTs   = 0;
+    // Demo state
+    let demoHomeProb   = 0.42;
+    let demoAwayProb   = 0.30;
+    let demoLastHome   = 0;
+    let demoLastAway   = 0;
+    let demoMatchTime  = 0;
+    let demoPeriod     = "PRE";
+    let demoLastQTs    = 0;
+    let demoQuestion   = null; // active question for this demo player
+    let demoScore      = 0;
+    let demoStreak     = 0;
+
+    // Handle prediction submission for demo player
+    socket.on("submit_prediction_demo", async ({ answer }) => {
+      if (!demoQuestion) return;
+      const q      = demoQuestion;
+      demoQuestion = null;
+      const correct    = Math.random() > 0.4; // simulate result based on replay
+      const points     = correct ? Math.round(100 * (1 + demoStreak * 0.25)) : 0;
+      demoScore       += points;
+      demoStreak       = correct ? demoStreak + 1 : 0;
+      socket.emit("prediction_result", {
+        correct, points,
+        timingLabel:  correct ? "Early" : "Wrong",
+        newScore:     demoScore,
+        newStreak:    demoStreak,
+        question:     q.text,
+        answer,
+      });
+      react({ type: "prediction_result", data: {
+        correct, timingLabel: correct ? "Early" : "Wrong",
+        secondsBefore: 45, question: q.text, answer,
+      }}).then(r => r && socket.emit("pundit_reaction", r));
+    });
 
     function sendScoresToSocket(data) {
       const home  = data.home_team || "Colombia";
       const away  = data.away_team || "Ghana";
       const score = data.score     || { home: 0, away: 0 };
-      demoMatchTime = data.match_time || demoMatchTime;
-      demoPeriod    = data.period     || demoPeriod;
+      demoMatchTime = data.match_time != null ? data.match_time : demoMatchTime;
+      demoPeriod    = data.period   || demoPeriod;
+      const inRunning = data.inRunning != null ? data.inRunning : true;
 
       socket.emit("match_state", {
-        homeTeam:    home,
-        awayTeam:    away,
-        score,
-        goals:       (score.home || 0) + (score.away || 0),
-        corners:     data.corners     || 0,
-        yellowCards: data.yellowCards || 0,
-        redCards:    0,
-        matchTime:   demoMatchTime,
-        period:      demoPeriod,
-        inRunning:   data.inRunning != null ? data.inRunning : true,
-        homeProb:    demoHomeProb,
-        awayProb:    demoAwayProb,
-        _mode:       "replay",
+        homeTeam: home, awayTeam: away, score,
+        goals: (score.home||0)+(score.away||0),
+        corners: data.corners||0, yellowCards: data.yellowCards||0, redCards: 0,
+        matchTime: demoMatchTime, period: demoPeriod, inRunning,
+        homeProb: demoHomeProb, awayProb: demoAwayProb,
+        _mode: "replay",
       });
 
       // Goal detection
       if (score.home > demoLastHome || score.away > demoLastAway) {
         const scoringTeam = score.home > demoLastHome ? home : away;
-        const scoreStr    = score.home + "-" + score.away;
+        const scoreStr = score.home + "-" + score.away;
         console.log("[demo] GOAL!", scoringTeam, scoreStr);
         react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
           .then(r => r && socket.emit("pundit_reaction", r));
@@ -407,10 +431,9 @@ io.on("connection", (socket) => {
 
       // Ask question every 15 seconds during live play
       const now = Date.now();
-      if (data.inRunning && now - demoLastQTs > 15000 &&
+      if (inRunning && !demoQuestion && now - demoLastQTs > 15000 &&
           demoPeriod !== "FT" && demoPeriod !== "HT" && demoPeriod !== "PRE") {
         demoLastQTs = now;
-        const QUESTIONS = require("../shared/questions");
         const valid = QUESTIONS.filter(q => {
           if (q.source === "odds" && !demoHomeProb) return false;
           if (q.id === "goal_before_half" && demoMatchTime > 40) return false;
@@ -419,13 +442,18 @@ io.on("connection", (socket) => {
           return true;
         });
         if (valid.length) {
-          const q       = valid[Math.floor(Math.random() * valid.length)];
+          const q = valid[Math.floor(Math.random() * valid.length)];
+          demoQuestion = q;
           const windowMs = 15000;
-          const qObj    = { id: q.id, text: q.text, type: q.type, windowMs, expiresAt: now + windowMs };
           console.log("[demo] asking:", q.text);
-          socket.emit("new_question", qObj);
+          socket.emit("new_question", {
+            id: q.id, text: q.text, type: q.type,
+            windowMs, expiresAt: now + windowMs,
+          });
           react({ type: "question_asked", data: { question: q.text } })
             .then(r => r && socket.emit("pundit_reaction", r));
+          // Auto-expire question after window
+          setTimeout(() => { demoQuestion = null; }, windowMs);
         }
       }
     }
@@ -436,15 +464,13 @@ io.on("connection", (socket) => {
       demoHomeProb = prob.home;
       demoAwayProb = prob.away;
       socket.emit("match_state", {
-        homeTeam:  "Colombia",
-        awayTeam:  "Ghana",
-        score:     { home: demoLastHome, away: demoLastAway },
-        homeProb:  prob.home,
-        awayProb:  prob.away,
+        homeTeam: "Colombia", awayTeam: "Ghana",
+        score: { home: demoLastHome, away: demoLastAway },
+        homeProb: prob.home, awayProb: prob.away,
         inRunning: true,
-        period:    demoPeriod || "1H",
+        period: demoPeriod || "1H",
         matchTime: demoMatchTime,
-        _mode:     "replay",
+        _mode: "replay",
       });
     }
 

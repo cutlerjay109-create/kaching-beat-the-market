@@ -69,10 +69,12 @@ function onMatchState(matchState) {
 function onQuestion(question) {
   UI.showPredictionCard(question, (answer) => {
     if (UI.flushAudioQueue) UI.flushAudioQueue();
-    socket.emit("submit_prediction", {
-      sessionId: state.sessionId,
-      answer,
-    });
+    // Use demo event if in demo mode
+    if (state.demoMode) {
+      socket.emit("submit_prediction_demo", { answer });
+    } else {
+      socket.emit("submit_prediction", { sessionId: state.sessionId, answer });
+    }
   });
 }
 
@@ -253,19 +255,19 @@ function initAuthScreen() {
 function triggerDemo() {
   const btn   = document.getElementById("demo-btn");
   const label = document.getElementById("demo-label");
+  if (!socket) return;
   if (btn) {
-    btn.textContent    = "Loading demo...";
-    btn.disabled       = true;
-    btn.style.color    = "#f5a623";
+    btn.textContent       = "Loading demo...";
+    btn.disabled          = true;
+    btn.style.color       = "#f5a623";
     btn.style.borderColor = "#f5a623";
   }
-  if (socket) {
-    socket.emit("start_demo");
-    setTimeout(() => {
-      if (label) label.style.display = "block";
-      if (btn)   btn.textContent = "⏺ Demo Playing";
-    }, 1000);
-  }
+  state.demoMode = true;
+  socket.emit("start_demo");
+  setTimeout(() => {
+    if (label) label.style.display = "block";
+    if (btn)   btn.textContent     = "⏺ Demo Playing";
+  }, 1000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
