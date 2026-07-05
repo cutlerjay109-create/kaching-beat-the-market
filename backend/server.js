@@ -64,6 +64,24 @@ const FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID ? String(process.env
 const fixtureNames = {};   // fixtureId -> { home, away, ts }
 const upcomingList = [];   // sorted by kickoff, future only
 
+// Normalize a timestamp that may arrive as epoch ms, epoch seconds, or ISO string
+function toMs(ts) {
+  if (ts == null) return null;
+  if (typeof ts === "number") return ts < 1e12 ? ts * 1000 : ts; // seconds -> ms
+  const parsed = Date.parse(ts);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+// Pick the first candidate that is a REAL team name (not a placeholder).
+// Fixes flags stuck on ⚽: once "Home"/"Away" was stored it was truthy and
+// permanently blocked the real fixture name from the registry.
+function realName(...candidates) {
+  for (const c of candidates) {
+    if (c && c !== "Home" && c !== "Away") return c;
+  }
+  return candidates[candidates.length - 1] || null;
+}
+
 async function loadFixtureNames() {
   try {
     const res = await fetch("https://txline.txodds.com/api/fixtures/snapshot", {
@@ -84,7 +102,7 @@ async function loadFixtureNames() {
     arr.forEach(f => {
       const home = f.Participant1 || f.HomeTeam  || "Home";
       const away = f.Participant2 || f.AwayTeam  || "Away";
-      const ts   = f.StartTime   || f.start_time || null;
+      const ts   = toMs(f.StartTime || f.start_time || null);
       fixtureNames[f.FixtureId] = { home, away, ts };
       // Only keep fixtures that haven't finished (within 3h past kickoff)
       if (ts && ts > now - 3 * 60 * 60 * 1000) {
@@ -140,7 +158,11 @@ async function handleOdds(oddsData) {
   // If odds say inRunning but period is still PRE, infer period from match time
   let inferredPeriod = prevPeriod;
   if (prob.inRunning && (prevPeriod === "PRE" || !prevPeriod)) {
-    inferredPeriod = prevTime <= 46 ? "1H" : "2H";
+    inferredPeriod = prevTime <= 45 ? "1H" : "2H";
+  }
+  // Safety net: never allow "1H" to persist past minute 45 while live
+  if (prob.inRunning && inferredPeriod === "1H" && prevTime >= 46) {
+    inferredPeriod = "2H";
   }
 
   currentMatchState = {
@@ -153,8 +175,10 @@ async function handleOdds(oddsData) {
     oddsTs:      prob.ts,
     oddsShiftTs: prob.ts,
     period:    inferredPeriod,
-    homeTeam:  (currentMatchState || {}).homeTeam || fixture.home || "Home",
-    awayTeam:  (currentMatchState || {}).awayTeam || fixture.away || "Away",
+    // realName() lets the registry name replace a stored "Home"/"Away"
+    // placeholder — fixes flags never rendering once names resolved late.
+    homeTeam:  realName((currentMatchState || {}).homeTeam, fixture.home, "Home"),
+    awayTeam:  realName((currentMatchState || {}).awayTeam, fixture.away, "Away"),
   };
 
   const shift = calcShift(previousMatchState, currentMatchState);
@@ -223,8 +247,10 @@ async function handleScores(scoresData) {
   if (!_inRunning && !isNext && !isLiveFid) return;
   const fixture = fixtureNames[fid] || {};
 
-  const homeTeam = scoresData.home_team || fixture.home || scoresData.Participant1 || prev.homeTeam || "Home";
-  const awayTeam = scoresData.away_team || fixture.away || scoresData.Participant2 || prev.awayTeam || "Away";
+  // realName() skips "Home"/"Away" placeholders so the real fixture name
+  // wins as soon as it's available from feed or registry (fixes stuck ⚽ flags)
+  const homeTeam = realName(scoresData.home_team, scoresData.Participant1, fixture.home, prev.homeTeam, "Home");
+  const awayTeam = realName(scoresData.away_team, scoresData.Participant2, fixture.away, prev.awayTeam, "Away");
 
   let score = scoresData.score || prev.score || { home: 0, away: 0 };
   if (scoresData.Score) {
@@ -250,54 +276,88 @@ async function handleScores(scoresData) {
     redCards    = (p1.H1?.RedCards    || 0) + (p1.H2?.RedCards    || 0) + (p2.H1?.RedCards    || 0) + (p2.H2?.RedCards    || 0);
   }
 
-  const clock     = scoresData.Clock || {};
-  const matchTime = scoresData.match_time != null ? scoresData.match_time
-                  : (clock.Seconds != null ? Math.floor(clock.Seconds / 60) : (prev.matchTime || 0));
+  const clock = scoresData.Clock || {};
 
-  // Trust odds stream inRunning over scores stream — scores sends "scheduled" even mid-game
+  // Coerce feed values that may arrive as strings ("2", "6") — strict ===
+  // against numbers silently failed and froze the period at "1H" forever.
+  const clockPeriod = clock.Period  != null ? Number(clock.Period)  : null;
+  const statusId    = (scoresData.StatusId  != null || scoresData.status_id != null)
+                    ? Number(scoresData.StatusId != null ? scoresData.StatusId : scoresData.status_id)
+                    : null;
+  const gameState   = (scoresData.GameState || "").toLowerCase();
+
+  // Clock.Seconds can be PER-HALF on TxLINE (resets to 0 at HT).
+  // Convert to a cumulative match minute using the clock period offset.
+  let matchTime;
+  if (scoresData.match_time != null) {
+    matchTime = Number(scoresData.match_time) || 0;
+  } else if (clock.Seconds != null) {
+    const rawMins = Math.floor(Number(clock.Seconds) / 60);
+    let offset = 0;
+    if      (clockPeriod === 2) offset = rawMins < 45 ? 45 : 0;   // per-half clock
+    else if (clockPeriod === 3) offset = rawMins < 90 ? 90 : 0;   // ET1
+    else if (clockPeriod === 4) offset = rawMins < 105 ? 105 : 0; // ET2
+    matchTime = rawMins + offset;
+  } else {
+    matchTime = prev.matchTime || 0;
+  }
+
+  // What THIS scores message says about the clock running (not sticky)
   const scoresInRunning = scoresData.inRunning != null ? scoresData.inRunning
                         : (clock.Running != null ? clock.Running : false);
-  const inRunning = prev.inRunning ? prev.inRunning : scoresInRunning;
-
-  const statusId  = scoresData.StatusId || scoresData.status_id;
-  const gameState = (scoresData.GameState || "").toLowerCase();
+  // Trust prev.inRunning (set by odds stream) as a fallback only —
+  // it must be allowed to go false again at HT/FT (fixed below).
+  let inRunning = prev.inRunning ? prev.inRunning : scoresInRunning;
 
   let period = prev.period || "PRE";
 
-  if (clock.Period != null) {
-    if      (clock.Period === 1) period = "1H";
-    else if (clock.Period === 2) period = "2H";
-    else if (clock.Period === 3) period = "ET1";
-    else if (clock.Period === 4) period = "ET2";
-  } else if (statusId != null) {
+  if (clockPeriod != null && !Number.isNaN(clockPeriod)) {
+    if      (clockPeriod === 1) period = "1H";
+    else if (clockPeriod === 2) period = "2H";
+    else if (clockPeriod === 3) period = "ET1";
+    else if (clockPeriod === 4) period = "ET2";
+  } else if (statusId != null && !Number.isNaN(statusId)) {
     if      (statusId === 4)  period = "1H";
     else if (statusId === 5)  period = "HT";
     else if (statusId === 6)  period = "2H";
     else if (statusId === 7)  period = "FT";
     else if (statusId === 31) period = "ET1";
     else if (statusId === 32) period = "ET2";
-  } else if (gameState && gameState !== "scheduled" && gameState !== "") {
+  } else if (gameState && gameState !== "scheduled") {
     if      (gameState.includes("first_half")  || gameState === "1h") period = "1H";
     else if (gameState.includes("second_half") || gameState === "2h") period = "2H";
     else if (gameState.includes("half_time")   || gameState === "ht") period = "HT";
     else if (gameState.includes("full_time")   || gameState === "ft") period = "FT";
     else if (gameState === "inprogress" || gameState === "live") {
-      period = (matchTime <= 46) ? "1H" : "2H";
+      period = (matchTime <= 45) ? "1H" : "2H";
     }
   } else if (inRunning && matchTime > 0) {
-    if      (matchTime <= 46) period = "1H";
-    else if (matchTime <= 93) period = "2H";
+    if      (matchTime <= 45) period = "1H";
+    else if (matchTime <= 90) period = "2H";
+    else                      period = matchTime <= 105 ? "ET1" : "ET2";
   } else if (inRunning && period === "PRE") {
     period = "1H";
   }
   const prevMatchTime = prev.matchTime || 0;
 
-  // Detect halftime: matchTime drops to 0 or stuck at 45 and NOT running
-  if (!inRunning && prev.period === "1H" && matchTime === 0 && prevMatchTime >= 44) period = "HT";
-  if (!inRunning && period === "1H" && matchTime === 45) period = "HT";
+  // Detect halftime: matchTime drops to 0 or stuck at 45 while clock stopped.
+  // Uses scoresInRunning (this message), not the sticky flag which never went false.
+  if (!scoresInRunning && prev.period === "1H" && matchTime === 0 && prevMatchTime >= 44) period = "HT";
+  if (!scoresInRunning && period === "1H" && matchTime === 45 && prevMatchTime >= 44) period = "HT";
 
-  // Detect second half: matchTime goes back to 46+ after HT
-  if (inRunning && matchTime >= 46 && (period === "HT" || prev.period === "HT")) period = "2H";
+  // Detect second half: matchTime goes to 46+ after HT
+  if (matchTime >= 46 && (period === "HT" || prev.period === "HT") && scoresInRunning) period = "2H";
+
+  // ── FINAL SAFETY NET (fixes "60' but still 1H") ────────────────────────
+  // No matter which detection branch ran (or failed), a live match past
+  // minute 45 can never still be first half.
+  if (inRunning && period === "1H" && matchTime >= 46) period = "2H";
+  if (inRunning && period === "PRE" && matchTime > 0)  period = matchTime <= 45 ? "1H" : "2H";
+
+  // inRunning must reflect reality: clock is stopped at HT and match over at FT.
+  // Previously it was sticky-true forever, which blocked HT/FT detection and
+  // the next-match countdown after full time.
+  if (period === "FT" || period === "HT") inRunning = false;
 
   currentMatchState = {
     ...(currentMatchState || {}),
@@ -501,6 +561,12 @@ io.on("connection", (socket) => {
       demoMatchTime = data.match_time != null ? data.match_time : demoMatchTime;
       demoPeriod    = data.period   || demoPeriod;
       const inRunning = data.inRunning != null ? data.inRunning : true;
+
+      // Safety net (same as live): never show 1H past minute 45
+      if (demoPeriod === "1H" && demoMatchTime >= 46) demoPeriod = "2H";
+      if (demoPeriod === "PRE" && inRunning && demoMatchTime > 0) {
+        demoPeriod = demoMatchTime <= 45 ? "1H" : "2H";
+      }
 
       socket.emit("match_state", {
         homeTeam: home, awayTeam: away, score,
