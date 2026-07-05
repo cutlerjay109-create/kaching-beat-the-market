@@ -148,7 +148,7 @@ async function handleOdds(oddsData) {
   };
 
   const shift = calcShift(previousMatchState, currentMatchState);
-  if (shift > 0.05 && previousMatchState && connectedPlayers > 0 && currentMatchState.inRunning) {
+  if (shift > 0.05 && previousMatchState && connectedPlayers > 0 && currentMatchState.inRunning && prob.inRunning) {
     const before = Math.round((previousMatchState.homeProb || 0.5) * 100);
     const after  = Math.round((currentMatchState.homeProb  || 0.5) * 100);
     console.log(`[odds] shift: ${before}% -> ${after}%`);
