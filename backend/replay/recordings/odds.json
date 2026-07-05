@@ -2,169 +2,17 @@
   {
     "delayMs": 2000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.324,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4200,
-        2560,
-        3240
-      ],
-      "in_running": false
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.324,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4200,
-        2560,
-        3240
-      ],
-      "in_running": false
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.324,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4200,
-        2560,
-        3240
-      ],
-      "in_running": false
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.319,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4240,
-        2570,
-        3190
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.337,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4100,
-        2530,
-        3370
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.346,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4030,
-        2510,
-        3460
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.356,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3950,
-        2490,
-        3560
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.347,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4020,
-        2510,
-        3470
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.341,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4070,
-        2520,
+        4300,
+        2290,
         3410
       ],
       "in_running": true
@@ -173,18 +21,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.325,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4190,
-        2560,
-        3250
+        4366,
+        2310,
+        3324
       ],
       "in_running": true
     }
@@ -192,18 +40,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.341,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4070,
-        2520,
-        3410
+        4375,
+        2313,
+        3312
       ],
       "in_running": true
     }
@@ -211,18 +59,75 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.343,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4050,
-        2520,
-        3430
+        4396,
+        2319,
+        3285
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4360,
+        2308,
+        3332
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4357,
+        2307,
+        3336
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4157,
+        2247,
+        3596
       ],
       "in_running": true
     }
@@ -230,18 +135,37 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.362,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3910,
-        2470,
-        3620
+        4184,
+        2255,
+        3561
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4159,
+        2248,
+        3593
       ],
       "in_running": true
     }
@@ -249,18 +173,37 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.372,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3830,
-        2450,
-        3720
+        4154,
+        2246,
+        3600
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4212,
+        2264,
+        3525
       ],
       "in_running": true
     }
@@ -268,18 +211,37 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.372,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3830,
-        2450,
-        3720
+        4012,
+        2204,
+        3785
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4079,
+        2224,
+        3697
       ],
       "in_running": true
     }
@@ -287,18 +249,37 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.39,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3690,
-        2410,
-        3900
+        4144,
+        2243,
+        3613
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4139,
+        2242,
+        3619
       ],
       "in_running": true
     }
@@ -306,18 +287,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.402,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3600,
-        2380,
-        4020
+        4146,
+        2244,
+        3610
       ],
       "in_running": true
     }
@@ -325,18 +306,37 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.397,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3640,
-        2390,
-        3970
+        4097,
+        2229,
+        3673
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4115,
+        2234,
+        3651
       ],
       "in_running": true
     }
@@ -344,18 +344,56 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.395,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3650,
-        2400,
-        3950
+        4064,
+        2219,
+        3717
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4105,
+        2232,
+        3663
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4177,
+        2253,
+        3569
       ],
       "in_running": true
     }
@@ -363,18 +401,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.406,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3570,
-        2370,
-        4060
+        3977,
+        2193,
+        3829
       ],
       "in_running": true
     }
@@ -382,18 +420,75 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.402,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3600,
-        2380,
-        4020
+        3995,
+        2198,
+        3807
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4051,
+        2215,
+        3733
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        3977,
+        2193,
+        3829
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        3983,
+        2195,
+        3822
       ],
       "in_running": true
     }
@@ -401,18 +496,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.39,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3690,
-        2410,
-        3900
+        4032,
+        2210,
+        3758
       ],
       "in_running": true
     }
@@ -420,370 +515,9 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.41,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3540,
-        2360,
-        4100
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.398,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3630,
-        2390,
-        3980
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.39,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3690,
-        2410,
-        3900
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.397,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3640,
-        2390,
-        3970
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.41,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3540,
-        2360,
-        4100
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.392,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3680,
-        2400,
-        3920
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.398,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3630,
-        2390,
-        3980
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.414,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3510,
-        2350,
-        4140
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.429,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3390,
-        2320,
-        4290
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.416,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3490,
-        2350,
-        4160
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.412,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3520,
-        2360,
-        4120
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.401,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3610,
-        2380,
-        4010
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.392,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3680,
-        2400,
-        3920
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.39,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3690,
-        2410,
-        3900
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.372,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3830,
-        2450,
-        3720
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.377,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3790,
-        2440,
-        3770
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.375,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3810,
-        2440,
-        3750
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.362,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3910,
-        2470,
-        3620
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.356,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3950,
-        2490,
-        3560
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.342,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
@@ -791,8 +525,8 @@
       ],
       "prices": [
         4060,
-        2520,
-        3420
+        2218,
+        3722
       ],
       "in_running": true
     }
@@ -800,18 +534,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.34,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4080,
-        2520,
-        3400
+        4126,
+        2238,
+        3637
       ],
       "in_running": true
     }
@@ -819,18 +553,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.332,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4140,
-        2540,
-        3320
+        4119,
+        2236,
+        3646
       ],
       "in_running": true
     }
@@ -838,132 +572,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.35,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        4000,
-        2500,
-        3500
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.36,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3920,
-        2480,
-        3600
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.368,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3860,
-        2460,
-        3680
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.385,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3730,
-        2420,
-        3850
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.385,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3730,
-        2420,
-        3850
-      ],
-      "in_running": false
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.385,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3730,
-        2420,
-        3850
-      ],
-      "in_running": false
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.385,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3730,
-        2420,
-        3850
+        4131,
+        2239,
+        3630
       ],
       "in_running": false
     }
@@ -971,740 +591,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.389,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        3700,
-        2410,
-        3890
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.398,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3630,
-        2390,
-        3980
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.401,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3610,
-        2380,
-        4010
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.389,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3700,
-        2410,
-        3890
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.388,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3710,
-        2410,
-        3880
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.386,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3720,
-        2420,
-        3860
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.392,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3680,
-        2400,
-        3920
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.394,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3660,
-        2400,
-        3940
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.371,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3840,
-        2450,
-        3710
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.359,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3930,
-        2480,
-        3590
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.349,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4010,
-        2500,
-        3490
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.355,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        3960,
-        2490,
-        3550
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.34,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4080,
-        2520,
-        3400
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.346,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4030,
-        2510,
-        3460
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.345,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4040,
-        2510,
-        3450
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.319,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4240,
-        2570,
-        3190
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.307,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4330,
-        2600,
-        3070
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.298,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4400,
-        2620,
-        2980
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.284,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4510,
-        2650,
-        2840
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.264,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4660,
-        2700,
-        2640
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.247,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        4790,
-        2740,
-        2470
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.04,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7990,
-        1900,
-        400
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.04,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7860,
-        1940,
-        400
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.04,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7670,
-        2000,
-        400
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.041,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7560,
-        2030,
-        410
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.049,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7440,
-        2070,
-        490
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.059,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7300,
-        2110,
-        590
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.053,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7380,
-        2090,
-        530
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.049,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7440,
-        2070,
-        490
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.057,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7330,
-        2100,
-        570
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.057,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7330,
-        2100,
-        570
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.062,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7250,
-        2130,
-        620
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.058,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7320,
-        2100,
-        580
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.062,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7260,
-        2120,
-        620
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.07,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7140,
-        2160,
-        700
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.079,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        7010,
-        2200,
-        790
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.081,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6980,
-        2210,
-        810
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.09,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6860,
-        2240,
-        900
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.091,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6840,
+        4166,
         2250,
-        910
+        3585
       ],
       "in_running": true
     }
@@ -1712,18 +610,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.086,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        6910,
-        2230,
-        860
+        4155,
+        2246,
+        3599
       ],
       "in_running": true
     }
@@ -1731,18 +629,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.092,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        6830,
-        2250,
-        920
+        4137,
+        2241,
+        3622
       ],
       "in_running": true
     }
@@ -1750,18 +648,18 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.101,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        6700,
-        2290,
-        1010
+        4144,
+        2243,
+        3612
       ],
       "in_running": true
     }
@@ -1769,94 +667,56 @@
   {
     "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.094,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        6800,
-        2260,
-        940
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.097,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6750,
-        2280,
-        970
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 4000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.109,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6580,
-        2330,
-        1090
-      ],
-      "in_running": true
-    }
-  },
-  {
-    "delayMs": 2000,
-    "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.109,
-      "price_names": [
-        "home",
-        "draw",
-        "away"
-      ],
-      "prices": [
-        6580,
-        2330,
-        1090
+        4164,
+        2249,
+        3587
       ],
       "in_running": false
     }
   },
   {
-    "delayMs": 2000,
+    "delayMs": 4000,
     "data": {
-      "fixture_id": 18179549,
-      "home_team": "Colombia",
-      "away_team": 0.109,
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
       "price_names": [
         "home",
         "draw",
         "away"
       ],
       "prices": [
-        6580,
-        2330,
-        1090
+        4231,
+        2269,
+        3499
+      ],
+      "in_running": false
+    }
+  },
+  {
+    "delayMs": 4000,
+    "data": {
+      "fixture_id": 18188721,
+      "home_team": "Paraguay",
+      "away_team": "France",
+      "price_names": [
+        "home",
+        "draw",
+        "away"
+      ],
+      "prices": [
+        4031,
+        2209,
+        3759
       ],
       "in_running": false
     }

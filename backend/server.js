@@ -354,8 +354,7 @@ io.on("connection", (socket) => {
     socket.emit("prediction_accepted", { predictionId: predId, question: question.text, answer });
   });
 
-  // Player requests demo replay — plays Colombia vs Ghana to this socket only
-  // Demo mode — plays Colombia vs Ghana replay to this socket only
+  // Demo mode — plays the most recent replay recording to this socket only
   // Works exactly like SOURCE_MODE=replay but isolated to one player
   socket.on("start_demo", () => {
     console.log("[demo] starting demo for:", socket.id);
@@ -364,7 +363,22 @@ io.on("connection", (socket) => {
     const { replayMatch }        = require("./replay/replayEngine");
     const { extractProbability } = require("./game/probability");
     const QUESTIONS              = require("../shared/questions");
-    const { calcPoints }         = require("./game/scoring");
+    const path                   = require("path");
+    const fs                     = require("fs");
+
+    // Read team names from recording file dynamically
+    let demoHome = "Home";
+    let demoAway = "Away";
+    try {
+      const recPath  = path.join(__dirname, "replay/recordings/scores.json");
+      const recData  = JSON.parse(fs.readFileSync(recPath, "utf8"));
+      const firstRec = recData.find(e => e.data && e.data.home_team);
+      if (firstRec) {
+        demoHome = firstRec.data.home_team;
+        demoAway = firstRec.data.away_team;
+      }
+    } catch(e) { /* use defaults */ }
+    console.log("[demo] playing:", demoHome, "vs", demoAway);
 
     // Demo state
     let demoHomeProb   = 0.42;
@@ -374,7 +388,7 @@ io.on("connection", (socket) => {
     let demoMatchTime  = 0;
     let demoPeriod     = "PRE";
     let demoLastQTs    = 0;
-    let demoQuestion   = null; // active question for this demo player
+    let demoQuestion   = null;
     let demoScore      = 0;
     let demoStreak     = 0;
 
@@ -402,8 +416,8 @@ io.on("connection", (socket) => {
     });
 
     function sendScoresToSocket(data) {
-      const home  = data.home_team || "Colombia";
-      const away  = data.away_team || "Ghana";
+      const home  = data.home_team || demoHome;
+      const away  = data.away_team || demoAway;
       const score = data.score     || { home: 0, away: 0 };
       demoMatchTime = data.match_time != null ? data.match_time : demoMatchTime;
       demoPeriod    = data.period   || demoPeriod;
@@ -464,7 +478,7 @@ io.on("connection", (socket) => {
       demoHomeProb = prob.home;
       demoAwayProb = prob.away;
       socket.emit("match_state", {
-        homeTeam: "Colombia", awayTeam: "Ghana",
+        homeTeam: demoHome, awayTeam: demoAway,
         score: { home: demoLastHome, away: demoLastAway },
         homeProb: prob.home, awayProb: prob.away,
         inRunning: true,
