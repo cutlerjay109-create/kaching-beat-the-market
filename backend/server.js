@@ -491,7 +491,7 @@ io.on("connection", (socket) => {
 
       // Ask question every 15 seconds during live play
       const now = Date.now();
-      if (inRunning && !demoQuestion && now - demoLastQTs > 15000 &&
+      if (inRunning && !demoQuestion && !demoPrediction && now - demoLastQTs > 15000 &&
           demoPeriod !== "FT" && demoPeriod !== "HT" && demoPeriod !== "PRE") {
         demoLastQTs = now;
         const valid = QUESTIONS.filter(q => {
@@ -502,29 +502,31 @@ io.on("connection", (socket) => {
           return true;
         });
         if (valid.length) {
-          const q        = valid[Math.floor(Math.random() * valid.length)];
-          const windowMs = 15000;
-          const askedAt  = now;
-          const expiresAt = now + windowMs;
-          // Store askedAt and expiresAt on the question so resolver can use them
+          const q         = valid[Math.floor(Math.random() * valid.length)];
+          const REPLAY_SECS_PER_MIN = 4;
+          const questionWindowMins  = q.window ? Math.ceil(q.window / 60) : 10;
+          const realWindowMs        = questionWindowMins * REPLAY_SECS_PER_MIN * 1000;
+          const answerWindowMs      = 15000;
+          const askedAt             = now;
+          const expiresAt           = now + realWindowMs;
           demoQuestion = { ...q, askedAt, expiresAt };
-          console.log("[demo] asking:", q.text);
+          console.log("[demo] asking:", q.text, "| window:", questionWindowMins, "min =", realWindowMs/1000, "real sec");
           socket.emit("new_question", {
             id: q.id, text: q.text, type: q.type,
-            windowMs, expiresAt,
+            windowMs: answerWindowMs, expiresAt,
           });
           react({ type: "question_asked", data: { question: q.text } })
             .then(r => r && socket.emit("pundit_reaction", r));
-          // Auto-expire question after window
+          setTimeout(() => {
+            if (demoQuestion && demoQuestion.id === q.id && !demoPrediction) {
+              socket.emit("question_expired", { id: q.id });
+            }
+          }, answerWindowMs);
           setTimeout(() => {
             if (demoQuestion && demoQuestion.id === q.id) {
               demoQuestion = null;
-              // If no prediction was submitted, just hide the card
-              if (!demoPrediction) {
-                socket.emit("question_expired", { id: q.id });
-              }
             }
-          }, windowMs);
+          }, realWindowMs);
         }
       }
     }
