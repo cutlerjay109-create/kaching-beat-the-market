@@ -290,10 +290,14 @@ async function handleScores(scoresData) {
   } else if (inRunning && period === "PRE") {
     period = "1H";
   }
-  // Detect halftime: clock stuck at 45 and not yet in 2H
-  if (matchTime === 45 && period === "1H" && !inRunning) {
-    period = "HT";
-  }
+  const prevMatchTime = prev.matchTime || 0;
+
+  // Detect halftime: matchTime drops to 0 or stuck at 45 and NOT running
+  if (!inRunning && prev.period === "1H" && matchTime === 0 && prevMatchTime >= 44) period = "HT";
+  if (!inRunning && period === "1H" && matchTime === 45) period = "HT";
+
+  // Detect second half: matchTime goes back to 46+ after HT
+  if (inRunning && matchTime >= 46 && (period === "HT" || prev.period === "HT")) period = "2H";
 
   currentMatchState = {
     ...(currentMatchState || {}),
