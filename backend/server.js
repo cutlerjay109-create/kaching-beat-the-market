@@ -58,8 +58,10 @@ let maxAwayGoals       = 0;
 let connectedPlayers   = 0;
 const FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID ? String(process.env.FEATURED_FIXTURE_ID) : null;
 
-// Fixture names lookup
-const fixtureNames = {};
+// ── FIXTURE REGISTRY (live from TxLINE — zero hardcoding) ───────────────────
+const fixtureNames = {};   // fixtureId -> { home, away, ts }
+const upcomingList = [];   // sorted by kickoff, future only
+
 async function loadFixtureNames() {
   try {
     const res = await fetch("https://txline.txodds.com/api/fixtures/snapshot", {
@@ -68,17 +70,49 @@ async function loadFixtureNames() {
         "X-Api-Token":   process.env.TXLINE_API_TOKEN,
       }
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const arr  = Array.isArray(data) ? data : [];
+    const now  = Date.now();
+
+    // Clear old data
+    Object.keys(fixtureNames).forEach(k => delete fixtureNames[k]);
+    upcomingList.length = 0;
+
     arr.forEach(f => {
-      fixtureNames[f.FixtureId] = { home: f.Participant1, away: f.Participant2 };
+      const home = f.Participant1 || f.HomeTeam  || "Home";
+      const away = f.Participant2 || f.AwayTeam  || "Away";
+      const ts   = f.StartTime   || f.start_time || null;
+      fixtureNames[f.FixtureId] = { home, away, ts };
+      // Only keep fixtures that haven't finished (within 3h past kickoff)
+      if (ts && ts > now - 3 * 60 * 60 * 1000) {
+        upcomingList.push({ fixtureId: f.FixtureId, home, away, ts });
+      }
     });
-    console.log(`[fixtures] loaded ${arr.length} fixture names`);
+
+    // Sort ascending — next match first
+    upcomingList.sort((a, b) => a.ts - b.ts);
+
+    console.log(`[fixtures] loaded ${arr.length} fixtures`);
+    const next = getNextUpcoming();
+    if (next) {
+      const mins = Math.round((next.ts - now) / 60000);
+      console.log(`[fixtures] next: ${next.home} vs ${next.away} in ${mins} min`);
+    }
   } catch (e) {
-    console.error("[fixtures] failed to load names:", e.message);
+    console.error("[fixtures] failed:", e.message);
   }
 }
+
+// Returns the next fixture that hasn't kicked off yet
+function getNextUpcoming() {
+  const now = Date.now();
+  return upcomingList.find(f => f.ts > now) || null;
+}
+
+// Load on startup (after JWT refresh) and refresh every 30 minutes
 setTimeout(loadFixtureNames, 3000);
+setInterval(loadFixtureNames, 30 * 60 * 1000);
 
 async function handleOdds(oddsData) {
   const prob = extractProbability(oddsData);
@@ -281,22 +315,14 @@ setInterval(async () => {
   push.pushLeaderboard(top);
 }, 30000);
 
-const UPCOMING = [
-  { home: "Paraguay",    away: "France",      ts: 1783198800000 },
-  { home: "Brazil",      away: "Norway",      ts: 1783285200000 },
-  { home: "Mexico",      away: "England",     ts: 1783296000000 },
-  { home: "Portugal",    away: "Spain",       ts: 1783371600000 },
-  { home: "USA",         away: "Belgium",     ts: 1783382400000 },
-  { home: "Argentina",   away: "Egypt",       ts: 1783634400000 },
-  { home: "Switzerland", away: "Colombia",    ts: 1783648800000 },
-];
+
+// ── COUNTDOWN (fully automatic from TxLINE fixture data) ────────────────────
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
   if (connectedPlayers === 0) return;
-  const now  = Date.now();
-  const next = UPCOMING.find(m => m.ts > now - 90 * 60 * 1000);
+  const next = getNextUpcoming();
   if (!next) return;
-  const secsUntil = Math.max(0, Math.floor((next.ts - now) / 1000));
+  const secsUntil = Math.max(0, Math.floor((next.ts - Date.now()) / 1000));
   push.pushMatchState({
     homeTeam: next.home, awayTeam: next.away,
     score: { home: 0, away: 0 }, matchTime: 0,
