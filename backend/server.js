@@ -354,49 +354,84 @@ io.on("connection", (socket) => {
     socket.emit("prediction_accepted", { predictionId: predId, question: question.text, answer });
   });
 
-  // Player requests demo replay — plays to this socket only
+  // Player requests demo replay — plays Colombia vs Ghana to this socket only
   socket.on("start_demo", () => {
     console.log("[demo] starting demo replay for:", socket.id);
     demoSockets.add(socket.id);
-    const { replayMatch } = require("./replay/replayEngine");
 
-    function sendToSocket(data) {
-      // Send match state only to this socket
-      if (data.fixture_id || data.home_team) {
-        // scores event
-        const home = data.home_team || "Colombia";
-        const away = data.away_team || "Ghana";
-        const score = data.score || { home: 0, away: 0 };
-        const ms = {
-          homeTeam:    home,
-          awayTeam:    away,
-          score,
-          goals:       (score.home || 0) + (score.away || 0),
-          corners:     data.corners     || 0,
-          yellowCards: data.yellowCards || 0,
-          redCards:    0,
-          matchTime:   data.match_time  || 0,
-          period:      data.period      || "1H",
-          inRunning:   data.inRunning   != null ? data.inRunning : true,
-          homeProb:    demoHomeProb,
-          awayProb:    demoAwayProb,
-          _mode:       "replay",
-        };
-        socket.emit("match_state", ms);
+    const { replayMatch }        = require("./replay/replayEngine");
+    const { extractProbability } = require("./game/probability");
 
-        // Detect goal
-        if (score.home > demoLastHome || score.away > demoLastAway) {
-          const scoringTeam = score.home > demoLastHome ? home : away;
-          react({ type: "goal", data: { team: scoringTeam, score: score.home + "-" + score.away } })
+    // Declare all state first so functions can access them
+    let demoHomeProb  = 0.42;
+    let demoAwayProb  = 0.30;
+    let demoLastHome  = 0;
+    let demoLastAway  = 0;
+    let demoMatchTime = 0;
+    let demoPeriod    = "PRE";
+    let demoLastQTs   = 0;
+
+    function sendScoresToSocket(data) {
+      const home  = data.home_team || "Colombia";
+      const away  = data.away_team || "Ghana";
+      const score = data.score     || { home: 0, away: 0 };
+      demoMatchTime = data.match_time || demoMatchTime;
+      demoPeriod    = data.period     || demoPeriod;
+
+      socket.emit("match_state", {
+        homeTeam:    home,
+        awayTeam:    away,
+        score,
+        goals:       (score.home || 0) + (score.away || 0),
+        corners:     data.corners     || 0,
+        yellowCards: data.yellowCards || 0,
+        redCards:    0,
+        matchTime:   demoMatchTime,
+        period:      demoPeriod,
+        inRunning:   data.inRunning != null ? data.inRunning : true,
+        homeProb:    demoHomeProb,
+        awayProb:    demoAwayProb,
+        _mode:       "replay",
+      });
+
+      // Goal detection
+      if (score.home > demoLastHome || score.away > demoLastAway) {
+        const scoringTeam = score.home > demoLastHome ? home : away;
+        const scoreStr    = score.home + "-" + score.away;
+        console.log("[demo] GOAL!", scoringTeam, scoreStr);
+        react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
+          .then(r => r && socket.emit("pundit_reaction", r));
+        demoLastHome = score.home;
+        demoLastAway = score.away;
+      }
+
+      // Ask question every 15 seconds during live play
+      const now = Date.now();
+      if (data.inRunning && now - demoLastQTs > 15000 &&
+          demoPeriod !== "FT" && demoPeriod !== "HT" && demoPeriod !== "PRE") {
+        demoLastQTs = now;
+        const QUESTIONS = require("../shared/questions");
+        const valid = QUESTIONS.filter(q => {
+          if (q.source === "odds" && !demoHomeProb) return false;
+          if (q.id === "goal_before_half" && demoMatchTime > 40) return false;
+          if (q.id === "corner_next_3" && demoPeriod !== "2H") return false;
+          if (q.id === "prob_climb_70" && Math.max(demoHomeProb, demoAwayProb) >= 0.70) return false;
+          return true;
+        });
+        if (valid.length) {
+          const q       = valid[Math.floor(Math.random() * valid.length)];
+          const windowMs = 15000;
+          const qObj    = { id: q.id, text: q.text, type: q.type, windowMs, expiresAt: now + windowMs };
+          console.log("[demo] asking:", q.text);
+          socket.emit("new_question", qObj);
+          react({ type: "question_asked", data: { question: q.text } })
             .then(r => r && socket.emit("pundit_reaction", r));
-          demoLastHome = score.home;
-          demoLastAway = score.away;
         }
       }
     }
 
     function sendOddsToSocket(data) {
-      const prob = require("./game/probability").extractProbability(data);
+      const prob = extractProbability(data);
       if (!prob) return;
       demoHomeProb = prob.home;
       demoAwayProb = prob.away;
@@ -407,32 +442,16 @@ io.on("connection", (socket) => {
         homeProb:  prob.home,
         awayProb:  prob.away,
         inRunning: true,
-        period:    "1H",
+        period:    demoPeriod || "1H",
+        matchTime: demoMatchTime,
         _mode:     "replay",
       });
     }
 
-    let demoHomeProb = 0.42;
-    let demoAwayProb = 0.30;
-    let demoLastHome = 0;
-    let demoLastAway = 0;
-
-    // Ask questions for this demo player using the shared question engine
-    const demoInterval = setInterval(() => {
-      const ms = {
-        homeTeam: "Colombia", awayTeam: "Ghana",
-        homeProb: demoHomeProb, awayProb: demoAwayProb,
-        inRunning: true, period: "1H", matchTime: 10,
-      };
-      const { maybeAskQuestion: ask } = require("./game/questionEngine");
-      // Use a separate question check — just push to this socket
-    }, 15000);
-
-    replayMatch("scores", sendToSocket);
+    replayMatch("scores", sendScoresToSocket);
     replayMatch("odds",   sendOddsToSocket);
 
-    // Clean up when socket disconnects
-    socket.once("disconnect", () => { clearInterval(demoInterval); demoSockets.delete(socket.id); });
+    socket.once("disconnect", () => demoSockets.delete(socket.id));
   });
 
   socket.on("disconnect", () => {
