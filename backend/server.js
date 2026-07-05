@@ -367,7 +367,11 @@ io.on("connection", (socket) => {
     const question = getActiveQuestion();
     if (!question) return socket.emit("error", { message: "No active question" });
     const lastOdds   = getLastOdds();
-    const oddsBefore = lastOdds ? (lastOdds.home || 0.5) : 0.5;
+    let oddsBefore   = 0.5;
+    if (lastOdds) {
+      const extracted = extractProbability(lastOdds);
+      if (extracted) oddsBefore = extracted.home;
+    }
     const predId = await savePrediction(sessionId, question.id, answer, oddsBefore);
     openPredictions[predId] = {
       sessionId, socketId: socket.id, question, answer,
