@@ -19,9 +19,12 @@ async function generateVoice(text) {
         text,
         model_id: "eleven_turbo_v2_5",
         voice_settings: {
-          stability:        0.4,
-          similarity_boost: 0.8,
-          style:            0.5,
+          // Broadcast-commentator tuning:
+          // higher stability = composed, professional delivery (no wobble);
+          // higher style = expressive rise-and-fall like a live TV call.
+          stability:        0.55,
+          similarity_boost: 0.85,
+          style:            0.65,
           use_speaker_boost: true,
         },
       }),
