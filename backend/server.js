@@ -22,7 +22,11 @@ const { extractProbability,
         calcShift }               = require("./game/probability");
 const { maybeAskQuestion,
         getActiveQuestion,
-        expireIfOverdue }         = require("./game/questionEngine");
+        expireIfOverdue,
+        closeQuestion,
+        renderQuestion,
+        resetForNewMatch,
+        ANSWER_WINDOW_MS }        = require("./game/questionEngine");
 const { resolve }                 = require("./game/resolver");
 const { react }                   = require("./pundit/pundit");
 const { recordResult,
@@ -130,6 +134,92 @@ function getNextUpcoming() {
   return upcomingList.find(f => f.ts > now) || null;
 }
 
+// ── MATCH LIFECYCLE TRANSITION ENGINE ───────────────────────────────────────
+// One central place that reacts the moment the match changes phase:
+//   PRE → 1H   kickoff call, counters reset, questions armed (~2 min in)
+//   1H  → HT   halftime summary, open predictions settled, questions paused
+//   HT  → 2H   "back underway" call, questions instantly re-armed
+//   any → FT   full-time call, everything settled and silenced, countdown next
+let lastAnnouncedPeriod = "PRE";
+let ftCleanupTimer = null;
+
+function broadcastPundit(r) {
+  if (!r) return;
+  io.sockets.sockets.forEach((s) => {
+    if (!demoSockets.has(s.id)) s.emit("pundit_reaction", r);
+  });
+}
+
+// Settle every open prediction RIGHT NOW (window truncated by HT/FT):
+// "happens" questions that never happened settle NO, holds settle by state.
+async function forceSettleOpenPredictions(reason) {
+  const q = getActiveQuestion();
+  if (q) q.hardExpiryTs = 0;              // resolver now sees the window as closed
+  if (Object.keys(openPredictions).length) {
+    console.log(`[lifecycle] force-settling ${Object.keys(openPredictions).length} prediction(s) at ${reason}`);
+  }
+  await resolveOpenPredictions();
+  closeQuestion();
+}
+
+function handlePeriodTransition(newPeriod, state) {
+  if (!newPeriod || newPeriod === lastAnnouncedPeriod) return;
+  const prevP = lastAnnouncedPeriod;
+  lastAnnouncedPeriod = newPeriod;
+  const home = (state && state.homeTeam) || "the home side";
+  const away = (state && state.awayTeam) || "the away side";
+  const sc   = (state && state.score) || { home: 0, away: 0 };
+
+  // ── KICKOFF ── the match has just started (feature 3 + 5)
+  if (newPeriod === "1H" && (prevP === "PRE" || prevP === "FT")) {
+    console.log(`[lifecycle] KICKOFF — ${home} vs ${away}`);
+    if (ftCleanupTimer) { clearTimeout(ftCleanupTimer); ftCleanupTimer = null; }
+    maxHomeGoals = 0;
+    maxAwayGoals = 0;
+    openPredictions = {};
+    resetForNewMatch(2 * 60 * 1000);      // first question ~2 min after the whistle
+    react({ type: "kickoff", data: { home, away } }).then(broadcastPundit);
+  }
+
+  // ── HALFTIME ── (feature 4)
+  else if (newPeriod === "HT") {
+    console.log(`[lifecycle] HALFTIME — ${home} ${sc.home}-${sc.away} ${away}`);
+    forceSettleOpenPredictions("halftime");
+    react({ type: "half_time", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
+      .then(broadcastPundit);
+  }
+
+  // ── SECOND HALF UNDERWAY ── instant restart (feature 4)
+  else if (newPeriod === "2H" && (prevP === "HT" || prevP === "1H")) {
+    console.log("[lifecycle] SECOND HALF underway");
+    resetForNewMatch(60 * 1000);          // questions resume ~1 min into the half
+    react({ type: "second_half", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
+      .then(broadcastPundit);
+  }
+
+  // ── FULL TIME ── silence everything, settle, enter countdown (feature 1)
+  else if (newPeriod === "FT") {
+    console.log(`[lifecycle] FULL TIME — ${home} ${sc.home}-${sc.away} ${away}`);
+    forceSettleOpenPredictions("full time");
+    react({ type: "full_time", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
+      .then(broadcastPundit);
+    // After the full-time moment has been shown, clear the state entirely so
+    // the next-match countdown takes over cleanly and no stale odds bleed in.
+    if (ftCleanupTimer) clearTimeout(ftCleanupTimer);
+    ftCleanupTimer = setTimeout(() => {
+      if (currentMatchState && currentMatchState.period === "FT") {
+        console.log("[lifecycle] post-match cleanup — switching to next-match countdown");
+        currentMatchState = null;
+        previousMatchState = null;
+        lastAnnouncedPeriod = "PRE";
+        maxHomeGoals = 0;
+        maxAwayGoals = 0;
+        loadFixtureNames();               // refresh so the countdown is accurate
+      }
+    }, 90 * 1000);
+  }
+}
+
 // Load on startup (after JWT refresh) and refresh every 30 minutes
 setTimeout(loadFixtureNames, 3000);
 setInterval(loadFixtureNames, 30 * 60 * 1000);
@@ -182,6 +272,10 @@ async function handleOdds(oddsData) {
   };
 
   const shift = calcShift(previousMatchState, currentMatchState);
+
+  // If the odds stream detects the match going live before the scores stream
+  // does, announce kickoff immediately — the app must start on the dot.
+  handlePeriodTransition(currentMatchState.period, currentMatchState);
   const now_odds = Date.now();
   if (shift > 0.08 && previousMatchState && connectedPlayers > 0 &&
       currentMatchState.inRunning && prob.inRunning &&
@@ -215,8 +309,10 @@ async function handleOdds(oddsData) {
       io.sockets.sockets.forEach((s) => {
         if (!demoSockets.has(s.id)) s.emit("new_question", {
           id: question.id, text: question.text, type: question.type,
-          expiresAt: question.expiresAt,
-          windowMs: Math.max(question.expiresAt - Date.now(), 10000),
+          expiresAt: question.answerDeadline,
+          // Card countdown = 60 s ANSWER window (question keeps watching the
+          // match for its full windowMinutes after answers lock)
+          windowMs: Math.max(question.answerDeadline - Date.now(), 10000),
         });
       });
       react({ type: "question_asked", data: { question: question.text } })
@@ -362,17 +458,22 @@ async function handleScores(scoresData) {
   currentMatchState = {
     ...(currentMatchState || {}),
     homeTeam, awayTeam, score,
+    fixtureId: fid != null ? fid : (currentMatchState || {}).fixtureId,
     goals: (score.home || 0) + (score.away || 0),
     corners, yellowCards, redCards,
     matchTime, period, inRunning,
   };
 
+  // Fire lifecycle announcements the instant the phase changes
+  handlePeriodTransition(period, currentMatchState);
+
   // Reset goal counters when a new match starts (different fixture)
-  const currentFid = currentMatchState && currentMatchState.fixtureId;
+  const currentFid = prev.fixtureId;
   if (currentFid && fid && String(currentFid) !== String(fid)) {
     maxHomeGoals = 0;
     maxAwayGoals = 0;
-    console.log("[scores] new fixture detected — resetting goal counters");
+    lastAnnouncedPeriod = "PRE";     // new match — transition engine starts fresh
+    console.log("[scores] new fixture detected — resetting for new match");
   }
 
   const cleanHome = Math.max(score.home || 0, maxHomeGoals);
@@ -380,9 +481,14 @@ async function handleScores(scoresData) {
   if (cleanHome > maxHomeGoals || cleanAway > maxAwayGoals) {
     const scoringTeam = cleanHome > maxHomeGoals ? homeTeam : awayTeam;
     const scoreStr    = `${cleanHome}-${cleanAway}`;
-    console.log(`[scores] GOAL! ${scoringTeam} ${scoreStr}`);
-    react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
-      .then(r => r && push.pushPundit(r, demoSockets));
+    // Only call goals during live play — never after full time or at the break
+    // (late feed corrections must not trigger commentary; feature 1)
+    const livePeriod = period === "1H" || period === "2H" || period === "ET1" || period === "ET2";
+    if (inRunning && livePeriod) {
+      console.log(`[scores] GOAL! ${scoringTeam} ${scoreStr}`);
+      react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
+        .then(r => r && push.pushPundit(r, demoSockets));
+    }
     maxHomeGoals = cleanHome;
     maxAwayGoals = cleanAway;
   }
@@ -399,30 +505,34 @@ async function handleScores(scoresData) {
 
 async function resolveOpenPredictions() {
   const question = getActiveQuestion();
-  expireIfOverdue();
+  // Match-clock-aware expiry: closes the question when its window of MATCH
+  // minutes has elapsed (askedAtMinute + windowMinutes) or the hard cap hits
+  expireIfOverdue(currentMatchState);
   if (!question || Object.keys(openPredictions).length === 0) return;
 
+  let resolvedAny = false;
   for (const [predId, pred] of Object.entries(openPredictions)) {
     const result = resolve(question, pred.answer, pred.matchStateBefore, currentMatchState);
     if (!result.resolved) continue;
+    resolvedAny = true;
     delete openPredictions[predId];
 
     const scoreResult = await recordResult(
       pred.sessionId, predId, result.correct,
       result.secondsBefore, result.oddsBefore, result.oddsAfter
     );
-    if (!scoreResult) continue;
-
+    // Player must always SEE the outcome, even if scoring couldn't persist
     io.to(pred.socketId).emit("prediction_result", {
       predictionId: predId,
       correct:      result.correct,
-      points:       scoreResult.points,
-      timingLabel:  scoreResult.timingLabel,
-      newStreak:    scoreResult.newStreak,
-      newScore:     scoreResult.newScore,
+      points:       scoreResult ? scoreResult.points      : 0,
+      timingLabel:  scoreResult ? scoreResult.timingLabel : (result.correct ? "On the Nose" : "Wrong"),
+      newStreak:    scoreResult ? scoreResult.newStreak   : null,
+      newScore:     scoreResult ? scoreResult.newScore    : null,
       question:     question.text,
       answer:       pred.answer,
     });
+    if (!scoreResult) continue;
 
     react({ type: "prediction_result", data: {
       correct: result.correct, timingLabel: scoreResult.timingLabel,
@@ -432,6 +542,9 @@ async function resolveOpenPredictions() {
     const top = await getTopPlayers(20);
     push.pushLeaderboard(top);
   }
+
+  // Resolver is pure now — the caller closes the shared live question
+  if (resolvedAny) closeQuestion();
 }
 
 io.on("connection", (socket) => {
@@ -443,13 +556,13 @@ io.on("connection", (socket) => {
   if (currentMatchState && currentMatchState.inRunning) {
     // Live match — send immediately
     socket.emit("match_state", { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" });
-    // Send active question to reconnecting player so they don't miss it
+    // Send active question to reconnecting player if answers are still open
     const aq = getActiveQuestion();
-    if (aq) {
-      const windowMs = Math.max(aq.expiresAt - Date.now(), 5000);
+    if (aq && Date.now() < aq.answerDeadline) {
+      const windowMs = Math.max(aq.answerDeadline - Date.now(), 5000);
       socket.emit("new_question", {
         id: aq.id, text: aq.text, type: aq.type,
-        expiresAt: aq.expiresAt, windowMs,
+        expiresAt: aq.answerDeadline, windowMs,
       });
     }
   } else {
@@ -472,6 +585,11 @@ io.on("connection", (socket) => {
     if (!sessionId || !answer) return;
     const question = getActiveQuestion();
     if (!question) return socket.emit("error", { message: "No active question" });
+    // Answers lock 60 s after the question is asked — the question keeps
+    // watching the match for its full window, but late taps don't count.
+    if (Date.now() > question.answerDeadline) {
+      return socket.emit("error", { message: "Answers are locked for this question" });
+    }
     const lastOdds   = getLastOdds();
     let oddsBefore   = 0.5;
     if (lastOdds) {
@@ -558,6 +676,7 @@ io.on("connection", (socket) => {
       const home  = data.home_team || demoHome;
       const away  = data.away_team || demoAway;
       const score = data.score     || { home: 0, away: 0 };
+      const demoPrevPeriod = demoPeriod;
       demoMatchTime = data.match_time != null ? data.match_time : demoMatchTime;
       demoPeriod    = data.period   || demoPeriod;
       const inRunning = data.inRunning != null ? data.inRunning : true;
@@ -566,6 +685,26 @@ io.on("connection", (socket) => {
       if (demoPeriod === "1H" && demoMatchTime >= 46) demoPeriod = "2H";
       if (demoPeriod === "PRE" && inRunning && demoMatchTime > 0) {
         demoPeriod = demoMatchTime <= 45 ? "1H" : "2H";
+      }
+
+      // Lifecycle announcements — same professional calls as live mode
+      if (demoPeriod !== demoPrevPeriod) {
+        const scoreStr = `${score.home || 0}-${score.away || 0}`;
+        if (demoPeriod === "1H" && demoPrevPeriod === "PRE") {
+          react({ type: "kickoff", data: { home, away } })
+            .then(r => r && socket.emit("pundit_reaction", r));
+        } else if (demoPeriod === "HT") {
+          demoQuestion = null;   // no questions at the break
+          react({ type: "half_time", data: { home, away, score: scoreStr } })
+            .then(r => r && socket.emit("pundit_reaction", r));
+        } else if (demoPeriod === "2H" && (demoPrevPeriod === "HT" || demoPrevPeriod === "1H")) {
+          react({ type: "second_half", data: { home, away, score: scoreStr } })
+            .then(r => r && socket.emit("pundit_reaction", r));
+        } else if (demoPeriod === "FT") {
+          demoQuestion = null;
+          react({ type: "full_time", data: { home, away, score: scoreStr } })
+            .then(r => r && socket.emit("pundit_reaction", r));
+        }
       }
 
       socket.emit("match_state", {
@@ -608,19 +747,20 @@ io.on("connection", (socket) => {
           const correct  = result.correct;
           const label    = correct ? (result.secondsBefore > 120 ? "Way Early" : result.secondsBefore > 60 ? "Early" : "On the Nose") : "Wrong";
 
-          // Save to real DB so score persists across refreshes
+          // Save to real DB so score persists across refreshes.
+          // Even if scoring fails (unregistered session), the player must
+          // still SEE the result — never leave them without an outcome.
           recordResult(
             pred.sessionId, "demo-" + Date.now(), correct,
             result.secondsBefore || 30, result.oddsBefore || 0.5, result.oddsAfter || 0.5
           ).then(scoreResult => {
-            if (!scoreResult) return;
             socket.emit("prediction_result", {
               predictionId: "demo-pred",
               correct,
-              points:      scoreResult.points,
+              points:      scoreResult ? scoreResult.points    : 0,
               timingLabel: label,
-              newScore:    scoreResult.newScore,
-              newStreak:   scoreResult.newStreak,
+              newScore:    scoreResult ? scoreResult.newScore  : null,
+              newStreak:   scoreResult ? scoreResult.newStreak : null,
               question:    pred.question.text,
               answer:      pred.answer,
             });
@@ -638,39 +778,55 @@ io.on("connection", (socket) => {
       if (inRunning && !demoQuestion && !demoPrediction && now - demoLastQTs > 15000 &&
           demoPeriod !== "FT" && demoPeriod !== "HT" && demoPeriod !== "PRE") {
         demoLastQTs = now;
-        const valid = QUESTIONS.filter(q => {
-          if (q.source === "odds" && !demoHomeProb) return false;
-          if (q.id === "goal_before_half" && demoMatchTime > 40) return false;
-          if (q.id === "corner_next_3" && demoPeriod !== "2H") return false;
-          if (q.id === "prob_climb_70" && Math.max(demoHomeProb, demoAwayProb) >= 0.70) return false;
-          return true;
+        // Use the SAME professional validity rules as live mode
+        const { getValidQuestions } = require("./game/questionEngine");
+        const valid = getValidQuestions({
+          homeTeam: demoHome, awayTeam: demoAway,
+          homeProb: demoHomeProb, awayProb: demoAwayProb,
+          matchTime: demoMatchTime, period: demoPeriod,
+          goals: demoLastHome + demoLastAway,
+          score: { home: demoLastHome, away: demoLastAway },
+          inRunning: true,
         });
         if (valid.length) {
-          const q         = valid[Math.floor(Math.random() * valid.length)];
-          const REPLAY_SECS_PER_MIN = 4;
-          const questionWindowMins  = q.window ? Math.ceil(q.window / 60) : 10;
-          const realWindowMs        = questionWindowMins * REPLAY_SECS_PER_MIN * 1000;
-          const answerWindowMs      = 15000;
-          const askedAt             = now;
-          const expiresAt           = now + realWindowMs;
-          demoQuestion = { ...q, askedAt, expiresAt };
-          console.log("[demo] asking:", q.text, "| window:", questionWindowMins, "min =", realWindowMs/1000, "real sec");
-          socket.emit("new_question", {
-            id: q.id, text: q.text, type: q.type,
-            windowMs: answerWindowMs, expiresAt,
+          const base = valid[Math.floor(Math.random() * valid.length)];
+          // Render {team}/{home}/{away} with the real recorded team names
+          const { text, targetSide } = renderQuestion(base, {
+            homeTeam: demoHome, awayTeam: demoAway,
+            homeProb: demoHomeProb, awayProb: demoAwayProb,
           });
-          react({ type: "question_asked", data: { question: q.text } })
+          const REPLAY_SECS_PER_MIN = 4;              // replay clock speed
+          const windowMinutes  = base.windowMinutes || 5;
+          // Hard cap in real time = window in replay time + small buffer
+          const hardExpiryTs   = now + windowMinutes * REPLAY_SECS_PER_MIN * 1000 + 8000;
+          const answerWindowMs = 15000;               // compressed answer window
+          const askedAt        = now;
+          demoQuestion = {
+            ...base, text, targetSide,
+            askedAt,
+            askedAtMinute: demoMatchTime,             // synced to replay match clock
+            windowMinutes,
+            answerDeadline: now + answerWindowMs,
+            hardExpiryTs,
+            expiresAt: hardExpiryTs,
+          };
+          console.log(`[demo] asking: "${text}" | window ${windowMinutes} match-min from ${demoMatchTime}'`);
+          socket.emit("new_question", {
+            id: base.id, text, type: base.type,
+            windowMs: answerWindowMs, expiresAt: demoQuestion.answerDeadline,
+          });
+          react({ type: "question_asked", data: { question: text } })
             .then(r => r && socket.emit("pundit_reaction", r));
           setTimeout(() => {
-            if (demoQuestion && demoQuestion.id === q.id && !demoPrediction) {
-              socket.emit("question_expired", { id: q.id });
+            if (demoQuestion && demoQuestion.id === base.id && !demoPrediction) {
+              socket.emit("question_expired", { id: base.id });
             }
           }, answerWindowMs);
           setTimeout(() => {
-            if (demoQuestion && demoQuestion.id === q.id) {
+            if (demoQuestion && demoQuestion.id === base.id) {
               demoQuestion = null;
             }
-          }, realWindowMs);
+          }, hardExpiryTs - now);
         }
       }
     }
@@ -723,6 +879,16 @@ io.on("connection", (socket) => {
 startOddsSource(handleOdds);
 startScoresSource(handleScores);
 
+// ── RESULT SWEEP ────────────────────────────────────────────────────────────
+// Feeds can go quiet for stretches; without this, a window that closed at
+// minute 63 wouldn't announce its result until the next feed message.
+// This sweep guarantees results come out within 5 s of the window closing.
+setInterval(() => {
+  if (!currentMatchState) return;
+  resolveOpenPredictions().catch(e =>
+    console.error("[sweep] resolve error:", e.message));
+}, 5000);
+
 setInterval(async () => {
   const top = await getTopPlayers(20);
   push.pushLeaderboard(top);
@@ -730,6 +896,10 @@ setInterval(async () => {
 
 
 // ── COUNTDOWN (fully automatic from TxLINE fixture data) ────────────────────
+// Professional precision: emits every 5 s normally, then every SECOND inside
+// the final minute so the timer lands on the dot. At zero it flips straight
+// into a "KICK-OFF" state; the live feed takes over the moment data arrives.
+let lastCountdownEmit = 0;
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
   if (currentMatchState && (currentMatchState.period === "1H" || currentMatchState.period === "2H" || currentMatchState.period === "HT")) return;
@@ -738,6 +908,8 @@ setInterval(() => {
   const next = getNextUpcoming();
   if (!next) {
     // Tournament over — no more matches
+    if (Date.now() - lastCountdownEmit < 5000) return;
+    lastCountdownEmit = Date.now();
     io.sockets.sockets.forEach((s) => {
       if (!demoSockets.has(s.id)) s.emit("match_state", {
         homeTeam: "Tournament", awayTeam: "Complete",
@@ -750,17 +922,24 @@ setInterval(() => {
     return;
   }
   const secsUntil = Math.max(0, Math.floor((next.ts - Date.now()) / 1000));
+
+  // Emit cadence: every 1 s inside the final minute, every 5 s otherwise
+  const cadence = secsUntil <= 60 ? 1000 : 5000;
+  if (Date.now() - lastCountdownEmit < cadence) return;
+  lastCountdownEmit = Date.now();
+
   const countdownState = {
     homeTeam: next.home, awayTeam: next.away,
     score: { home: 0, away: 0 }, matchTime: 0,
     period: "PRE", inRunning: false,
     countdown: secsUntil,
+    kickoffImminent: secsUntil === 0,   // timer is up — waiting on first live data
     _mode: process.env.SOURCE_MODE || "live",
   };
   io.sockets.sockets.forEach((s) => {
     if (!demoSockets.has(s.id)) s.emit("match_state", countdownState);
   });
-}, 5000);
+}, 1000);
 
 let lastCommentaryTs = 0;
 setInterval(async () => {
