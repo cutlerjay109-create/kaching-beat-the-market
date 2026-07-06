@@ -41,9 +41,15 @@ function updateMatchView(state) {
       liveBadge.style.cssText = "display:flex;align-items:center;gap:0.4rem;background:rgba(90,114,150,0.1);border:1px solid rgba(90,114,150,0.3);border-radius:99px;padding:0.25rem 0.65rem;font-size:0.7rem;font-weight:600;letter-spacing:2px;color:#5a7296;text-transform:uppercase;";
     }
   }
-  if (state.countdown != null && state.countdown > 0 && !state.inRunning) {
-    if (timeEl)   timeEl.textContent   = formatCountdown(state.countdown);
-    if (periodEl) periodEl.textContent = "NEXT";
+  if (state.countdown != null && !state.inRunning && (state.countdown > 0 || state.kickoffImminent || state.period === "PRE")) {
+    if (state.countdown <= 0) {
+      // Timer is up — the whistle is moments away (live feed takes over instantly)
+      if (timeEl)   timeEl.textContent   = "KICK-OFF";
+      if (periodEl) periodEl.textContent = "LIVE SOON";
+    } else {
+      if (timeEl)   timeEl.textContent   = formatCountdown(state.countdown);
+      if (periodEl) periodEl.textContent = "NEXT";
+    }
   } else {
     // Display-level safety net: a match past minute 45 can never be "1H",
     // even if a stale period slipped through from the backend.
