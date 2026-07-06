@@ -1,146 +1,155 @@
 // shared/questions.js — all possible prediction question types.
-// Each question maps to a data field from the TxLINE scores or odds feed.
+//
+// PROFESSIONAL TIMING MODEL:
+//   • windowMinutes = MATCH minutes the question watches (3–5, never longer —
+//     broadcast-style micro-predictions, resolved in sync with the match clock)
+//   • Placeholders {home} {away} {leading} {trailing} {team} are rendered with
+//     real team names at ask time by the question engine.
+//   • target tells the resolver WHICH team the question is about:
+//     "home" | "away" | "leading" | "either"
 
 module.exports = [
   // ── GOALS ──────────────────────────────────────────────────
   {
-    id:      "goal_next_10",
-    text:    "Goal in the next 10 minutes?",
+    id:      "team_goal_next_3",
+    text:    "Will {team} score in the next 3 minutes?",
     type:    "yes_no",
     source:  "scores",
-    field:   "goals",
-    window:  10 * 60,
+    field:   "team_goals",
+    target:  "leading",          // rendered as the team on top of the market
+    windowMinutes: 3,
+  },
+  {
+    id:      "team_goal_next_5",
+    text:    "Will {team} find the net in the next 5 minutes?",
+    type:    "yes_no",
+    source:  "scores",
+    field:   "team_goals",
+    target:  "either",           // random side — keeps it varied
+    windowMinutes: 5,
   },
   {
     id:      "goal_next_5",
-    text:    "Goal in the next 5 minutes?",
+    text:    "A goal — either end — in the next 5 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "goals",
-    window:  5 * 60,
+    windowMinutes: 5,
   },
   {
-    id:      "goal_before_half",
-    text:    "Will there be a goal before halftime?",
+    id:      "goal_next_3",
+    text:    "Will the deadlock shift in the next 3 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "goals",
-    window:  null,
+    windowMinutes: 3,
   },
   {
-    id:      "goal_next_15",
-    text:    "Will the score change in the next 15 minutes?",
-    type:    "yes_no",
-    source:  "scores",
-    field:   "goals",
-    window:  15 * 60,
-  },
-  {
-    id:      "no_goal_next_10",
-    text:    "Will it stay goalless for the next 10 minutes?",
+    id:      "no_goal_next_5",
+    text:    "Will it stay goalless for the next 5 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "no_goals",
-    window:  10 * 60,
+    windowMinutes: 5,
   },
 
   // ── CORNERS ────────────────────────────────────────────────
   {
-    id:      "corner_next_5",
-    text:    "Corner kick in the next 5 minutes?",
-    type:    "yes_no",
-    source:  "scores",
-    field:   "corners",
-    window:  5 * 60,
-  },
-  {
     id:      "corner_next_3",
-    text:    "Corner kick in the next 3 minutes?",
+    text:    "A corner kick in the next 3 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "corners",
-    window:  3 * 60,
+    windowMinutes: 3,
   },
   {
-    id:      "two_corners_next_10",
-    text:    "Will there be 2 or more corners in the next 10 minutes?",
+    id:      "corner_next_5",
+    text:    "Will {home} or {away} win a corner in the next 5 minutes?",
+    type:    "yes_no",
+    source:  "scores",
+    field:   "corners",
+    windowMinutes: 5,
+  },
+  {
+    id:      "two_corners_next_5",
+    text:    "Two or more corners in the next 5 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "corners_2plus",
-    window:  10 * 60,
+    windowMinutes: 5,
   },
 
   // ── CARDS ──────────────────────────────────────────────────
   {
-    id:      "card_next_10",
-    text:    "A yellow or red card in the next 10 minutes?",
+    id:      "card_next_5",
+    text:    "Will the referee reach for a card in the next 5 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "cards",
-    window:  10 * 60,
+    windowMinutes: 5,
   },
   {
-    id:      "card_next_5",
-    text:    "A card shown in the next 5 minutes?",
+    id:      "card_next_3",
+    text:    "A booking in the next 3 minutes?",
     type:    "yes_no",
     source:  "scores",
     field:   "cards",
-    window:  5 * 60,
+    windowMinutes: 3,
   },
 
   // ── ODDS / PROBABILITY ─────────────────────────────────────
   {
     id:       "prob_climb_60",
-    text:     "Will the leading team's chance climb past 60% in the next 8 minutes?",
+    text:     "Will {leading}'s win chance climb past 60% in the next 4 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability",
     threshold: 0.60,
-    window:   8 * 60,
+    windowMinutes: 4,
   },
   {
     id:       "prob_climb_70",
-    text:     "Will the leading team's chance climb past 70% in the next 10 minutes?",
+    text:     "Will {leading}'s win chance climb past 70% in the next 5 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability",
     threshold: 0.70,
-    window:   10 * 60,
+    windowMinutes: 5,
   },
   {
     id:       "prob_shift_5",
-    text:     "Will the win probability shift by 5% in the next 5 minutes?",
+    text:     "Will the market move 5% in the next 3 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability_shift",
     threshold: 0.05,
-    window:   5 * 60,
+    windowMinutes: 3,
   },
   {
     id:       "prob_shift_10",
-    text:     "Will the win probability shift by 10% in the next 10 minutes?",
+    text:     "Will the win probability swing 10% in the next 5 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability_shift",
     threshold: 0.10,
-    window:   10 * 60,
+    windowMinutes: 5,
   },
   {
     id:       "prob_stay_above_65",
-    text:     "Will the leading team stay above 65% win chance for the next 5 minutes?",
+    text:     "Will {leading} hold above a 65% win chance for the next 4 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability_hold",
     threshold: 0.65,
-    window:   5 * 60,
+    windowMinutes: 4,
   },
   {
     id:       "market_stays_tight",
-    text:     "Will both teams stay within 10% of each other for the next 5 minutes?",
+    text:     "Will {home} and {away} stay within 10% of each other for the next 4 minutes?",
     type:     "yes_no",
     source:   "odds",
     field:    "probability_tight",
     threshold: 0.10,
-    window:   5 * 60,
+    windowMinutes: 4,
   },
 ];
