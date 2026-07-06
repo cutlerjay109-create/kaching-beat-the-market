@@ -1,41 +1,60 @@
 // backend/game/resolver.js — checks if an open prediction won or lost.
-
-const { closeQuestion } = require("./questionEngine");
+//
+// PROFESSIONAL SETTLEMENT (mirrors real in-play markets):
+//   • "happens" questions (goal / corner / card / odds move) settle YES the
+//     MOMENT the event occurs — instant payout feel.
+//   • "hold" questions (stays goalless / stays above 65%) settle only when the
+//     window ends — unless the hold breaks, which settles NO immediately.
+//   • The window is measured in MATCH minutes (askedAtMinute + windowMinutes),
+//     so the result is synced to what actually happened on the pitch, with a
+//     wall-clock hard cap as a failsafe for stalled feeds.
+//
+// NOTE: this module is now PURE — it no longer closes the shared live question
+// (that caused demo resolutions to kill live questions). The caller closes it.
 
 // Fields whose YES outcome means "the state HELD for the whole window".
-// These must not resolve early just because the condition is true at the start.
 const HOLD_FIELDS = new Set(["no_goals", "probability_hold", "probability_tight"]);
 
 // Resolve a yes/no prediction against current match state.
-// Returns { resolved: true, correct, secondsBefore, oddsBefore, oddsAfter }
-// or { resolved: false } if not enough data yet.
+// Returns { resolved: true, correct, ... } or { resolved: false }.
 function resolve(question, answer, matchStateBefore, matchStateNow) {
   if (!question || !matchStateNow) return { resolved: false };
 
-  const askedAt  = question.askedAt;
-  const now      = Date.now();
-  const isHold   = HOLD_FIELDS.has(question.field);
+  const askedAt = question.askedAt;
+  const now     = Date.now();
+  const isHold  = HOLD_FIELDS.has(question.field);
   const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
-  const expired  = now >= question.expiresAt;
+
+  // ── MATCH-CLOCK EXPIRY ────────────────────────────────────────────────
+  const nowMinute     = matchStateNow.matchTime || 0;
+  const askedAtMinute = question.askedAtMinute != null
+                      ? question.askedAtMinute
+                      : (matchStateBefore ? matchStateBefore.matchTime || 0 : 0);
+  const windowMinutes = question.windowMinutes || 5;
+  const hardExpiryTs  = question.hardExpiryTs || question.expiresAt || (askedAt + windowMinutes * 90 * 1000);
+
+  const windowClosedByClock = nowMinute >= askedAtMinute + windowMinutes;
+  const windowClosedByCap   = now >= hardExpiryTs;
+  const expired = windowClosedByClock || windowClosedByCap;
 
   let resolvedNow = false;
   let conditionMet;
 
   if (isHold) {
-    // "stays" question: YES wins only if it held all the way to expiry.
-    if (!stillMet) {            // hold broke early -> resolve now as NO
+    // "stays" question: YES wins only if it held all the way to the window end.
+    if (!stillMet) {            // hold broke early -> resolve now as NO-condition
       resolvedNow  = true;
       conditionMet = false;
-    } else if (expired) {       // held the whole window -> YES
+    } else if (expired) {       // held the whole window -> YES-condition
       resolvedNow  = true;
       conditionMet = true;
     }
   } else {
-    // "happens" question: YES wins as soon as it happens.
-    if (stillMet) {             // event occurred -> resolve now as YES
+    // "happens" question: YES wins the moment it happens.
+    if (stillMet) {             // event occurred -> settle instantly
       resolvedNow  = true;
       conditionMet = true;
-    } else if (expired) {       // never happened -> NO
+    } else if (expired) {       // window closed with no event -> NO
       resolvedNow  = true;
       conditionMet = false;
     }
@@ -49,8 +68,6 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
   const oddsShiftTs   = matchStateNow.oddsShiftTs || now;
   const secondsBefore = Math.max(0, Math.round((oddsShiftTs - askedAt) / 1000));
 
-  closeQuestion();
-
   return {
     resolved:     true,
     correct,
@@ -61,8 +78,14 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
   };
 }
 
+function _teamGoals(state, side) {
+  if (!state) return 0;
+  const s = state.score || {};
+  return side === "away" ? (s.away || 0) : (s.home || 0);
+}
+
 function _conditionMet(question, before, now) {
-  const { field, threshold, source } = question;
+  const { field, threshold, source, targetSide } = question;
 
   if (source === "scores") {
     if (field === "goals") {
@@ -70,8 +93,12 @@ function _conditionMet(question, before, now) {
       const goalsNow    = now    ? (now.goals    || 0) : 0;
       return goalsNow > goalsBefore;
     }
+    if (field === "team_goals") {
+      // Team-specific: "Will Brazil score in the next 3 minutes?"
+      const side = targetSide || "home";
+      return _teamGoals(now, side) > _teamGoals(before, side);
+    }
     if (field === "no_goals") {
-      // Condition met (YES correct) if NO goal happened
       const goalsBefore = before ? (before.goals || 0) : 0;
       const goalsNow    = now    ? (now.goals    || 0) : 0;
       return goalsNow === goalsBefore;
@@ -104,12 +131,10 @@ function _conditionMet(question, before, now) {
       return Math.abs(now_ - before_) >= (threshold || 0.05);
     }
     if (field === "probability_hold") {
-      // YES if leading team stays above threshold
       const leading = Math.max(now.homeProb || 0, now.awayProb || 0);
       return leading >= (threshold || 0.65);
     }
     if (field === "probability_tight") {
-      // YES if difference between home and away stays within threshold
       const diff = Math.abs((now.homeProb || 0) - (now.awayProb || 0));
       return diff <= (threshold || 0.10);
     }
