@@ -79,6 +79,9 @@ function onQuestion(question) {
 }
 
 function onPredictionResult(result) {
+  // Results are broadcast with a sessionId so they survive socket reconnects —
+  // show only the card that belongs to THIS player.
+  if (result.sessionId && result.sessionId !== state.sessionId) return;
   state.score  = result.newScore  != null ? result.newScore  : state.score;
   state.streak = result.newStreak != null ? result.newStreak : state.streak;
   UI.updateStreakDisplay(state.score, state.streak, state.rank);
