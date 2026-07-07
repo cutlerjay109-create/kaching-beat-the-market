@@ -68,7 +68,7 @@ Deliver ONE commentator line acknowledging it gracefully — the game is a cruel
   else if (type === "goal") {
     prompt = `${PERSONA}
 
-GOAL. ${data.team} have scored. It is now ${data.score}.
+GOAL at minute ${data.minute || "now"}. ${data.team} have scored. It is now ${data.score}.
 Deliver ONE electrifying goal call — the signature moment of a great commentator. Maximum energy through word choice and rhythm, still controlled and professional.`;
   }
   else if (type === "odds_shift") {
@@ -77,16 +77,35 @@ Deliver ONE electrifying goal call — the signature moment of a great commentat
 The live market has moved sharply: ${data.team}'s win probability has gone from ${data.before}% to ${data.after}%.
 Deliver ONE commentator line interpreting what the market is telling us about the flow of this match — the tone of an analyst who understands numbers and football.`;
   }
+  else if (type === "red_card") {
+    prompt = `${PERSONA}
+
+RED CARD at minute ${data.minute} — ${data.home} against ${data.away}, the score ${data.score}. A player has been sent off.
+Deliver ONE commentator line on the dismissal — the gravity of going down to ten men, controlled shock, professional.`;
+  }
   else if (type === "commentary") {
-    const { minute, homeTeam, awayTeam, homeProb, awayProb, score, period } = data;
+    const { minute, homeTeam, awayTeam, homeProb, awayProb, score, period, corners, cards, recentEvents } = data;
     const leading     = homeProb > awayProb ? homeTeam : awayTeam;
     const leadingProb = Math.max(homeProb, awayProb);
     const trailing    = homeProb > awayProb ? awayTeam : homeTeam;
+    const phase =
+        period === "1H" && String(minute).includes("+") ? "first-half stoppage time"
+      : period === "2H" && String(minute).includes("+") ? "second-half stoppage time — the closing moments"
+      : period === "1H" ? "the first half"
+      : period === "2H" ? "the second half"
+      : "extra time";
+    const eventsLine = recentEvents && recentEvents.length
+      ? `Recent events from the feed: ${recentEvents.join("; ")}.`
+      : "No goals, cards or corners in the last few minutes — a quieter spell.";
     prompt = `${PERSONA}
 
-Live picture: ${homeTeam} against ${awayTeam}, minute ${minute}, ${period || "in progress"}, the score ${score}.
-The market has ${leading} favoured at ${leadingProb}%, ${trailing} at ${Math.min(homeProb, awayProb)}%.
-Deliver ONE line of colour commentary a lead broadcaster would give at this exact moment — an observation about the state of the contest, not a stats read-out.`;
+You are LIVE. This is the REAL current state of the match — every fact below is true right now, use ONLY these facts:
+- ${homeTeam} ${score} ${awayTeam}, minute ${minute}, ${phase}.
+- Market: ${leading} favoured at ${leadingProb}%, ${trailing} at ${Math.min(homeProb, awayProb)}%.
+- Match totals so far: ${corners || 0} corners, ${cards || 0} cards.
+- ${eventsLine}
+
+Deliver ONE line of live colour commentary about THIS exact moment. Reference something real from the facts above (the scoreline, the phase of the game, a recent event, or what the market is saying). Never invent an incident that is not listed.`;
   }
   else if (type === "reconnecting") {
     return "Bear with us a moment… we are just re-establishing the live feed from the stadium.";
