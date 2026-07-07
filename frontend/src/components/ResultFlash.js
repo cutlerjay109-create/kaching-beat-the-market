@@ -1,4 +1,4 @@
-// ResultFlash.js — shows win/lose result + why line after each guess.
+// ResultFlash.js — the WIN/LOSS card shown the moment a prediction settles.
 
 function showResult(data) {
   const el        = document.getElementById("result-flash");
@@ -10,19 +10,21 @@ function showResult(data) {
   el.className = `visible ${data.correct ? "correct" : "wrong"}`;
 
   if (headline) headline.textContent = data.correct
-    ? `${data.timingLabel} call!`
-    : "Not this time.";
+    ? `✓ ${data.timingLabel || "Correct"} call!`
+    : "✗ Not this time";
 
-  if (why) why.textContent = data.correct
-    ? `You called it ${data.secondsBefore || 0}s before the market moved.`
-    : `The market did not agree with you on this one.`;
+  if (why) {
+    const q = data.question ? `"${data.question}" — you said ${String(data.answer || "").toUpperCase()}. ` : "";
+    why.textContent = data.correct
+      ? q + (data.secondsBefore ? `Called it ${data.secondsBefore}s before the market moved.` : `The match proved you right.`)
+      : q + `The match went the other way.`;
+  }
 
-  if (points) points.textContent = data.correct
-    ? `+${data.points} pts`
-    : "";
+  if (points) points.textContent = data.correct ? `+${data.points || 0} pts` : "";
 
-  // Auto-hide after 4 seconds
-  setTimeout(() => { el.className = ""; }, 4000);
+  // Hold the card long enough to read, then clear
+  clearTimeout(showResult._t);
+  showResult._t = setTimeout(() => { el.className = ""; }, 6000);
 }
 
-module.exports = { showResult };
+if (typeof module !== "undefined") module.exports = { showResult };
