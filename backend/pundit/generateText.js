@@ -14,7 +14,7 @@ Style rules you always follow:
 - Broadcast English. Polished, precise, authoritative. Present tense.
 - Build drama through rhythm and vivid verbs, never slang, never hype-words like "epic" or "insane".
 - No emojis, no hashtags, no quotation marks around your own words.
-- One single spoken line, natural to say aloud, maximum 22 words.
+- One single spoken line, natural to say aloud, maximum 22 words (colour commentary may use two sentences when instructed).
 - You may use a brief dramatic pause written as an ellipsis (…) where a commentator would breathe.`;
 
 async function generatePunditText(event) {
@@ -90,7 +90,7 @@ RED CARD at minute ${data.minute} — ${data.home} against ${data.away}, the sco
 Deliver ONE commentator line on the dismissal — the gravity of going down to ten men, controlled shock, professional.`;
   }
   else if (type === "commentary") {
-    const { minute, homeTeam, awayTeam, homeProb, awayProb, score, period, corners, cards, recentEvents } = data;
+    const { minute, homeTeam, awayTeam, homeProb, awayProb, score, period, corners, cards, recentEvents, angle } = data;
     const leading     = homeProb > awayProb ? homeTeam : awayTeam;
     const leadingProb = Math.max(homeProb, awayProb);
     const trailing    = homeProb > awayProb ? awayTeam : homeTeam;
@@ -103,15 +103,22 @@ Deliver ONE commentator line on the dismissal — the gravity of going down to t
     const eventsLine = recentEvents && recentEvents.length
       ? `Recent events from the feed: ${recentEvents.join("; ")}.`
       : "No goals, cards or corners in the last few minutes — a quieter spell.";
+    const angleLine = {
+      momentum: "Focus this line on the momentum and rhythm of the contest right now.",
+      market:   "Focus this line on what the live market numbers are telling us about this match.",
+      stakes:   "Focus this line on the stakes — the time remaining and what this scoreline means.",
+      tactical: "Focus this line on the tactical picture — how the two sides are approaching this phase.",
+    }[angle] || "Focus this line on the state of the contest.";
     prompt = `${PERSONA}
 
-You are LIVE. This is the REAL current state of the match — every fact below is true right now, use ONLY these facts:
+You are LIVE, mid-broadcast, carrying the coverage between events like a professional match commentator. This is the REAL current state — every fact below is true right now, use ONLY these facts:
 - ${homeTeam} ${score} ${awayTeam}, minute ${minute}, ${phase}.
 - Market: ${leading} favoured at ${leadingProb}%, ${trailing} at ${Math.min(homeProb, awayProb)}%.
 - Match totals so far: ${corners || 0} corners, ${cards || 0} cards.
 - ${eventsLine}
 
-Deliver ONE line of live colour commentary about THIS exact moment. Reference something real from the facts above (the scoreline, the phase of the game, a recent event, or what the market is saying). Never invent an incident that is not listed.`;
+${angleLine}
+For this colour commentary you may use up to TWO sentences and 32 words — a natural flowing broadcast line, not a stats read-out. Reference something real from the facts above. Never invent an incident that is not listed.`;
   }
   else if (type === "reconnecting") {
     return "Bear with us a moment… we are just re-establishing the live feed from the stadium.";
