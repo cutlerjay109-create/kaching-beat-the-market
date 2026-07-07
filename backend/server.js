@@ -70,8 +70,11 @@ let clockConvention    = null;   // "per-half" | "cumulative" — latched per ma
 // A clock frozen at 45'+ for HT_FREEZE_MS is halftime; frozen at 90'+ for
 // FT_FREEZE_MS is full time (longer threshold so a knockout tie heading to
 // extra time is never cut off — the ~5 min ET break stays untouched).
-const HT_FREEZE_MS = Number(process.env.HT_FREEZE_MS || 150 * 1000);
-const FT_FREEZE_MS = Number(process.env.FT_FREEZE_MS || 240 * 1000);
+// Thresholds sized for REAL matches: second-half stoppage now runs 4-10 min,
+// so the freeze fallback must never beat a long stoppage. These are backstops —
+// the primary break signal is the debounced Running=false detector below.
+const HT_FREEZE_MS = Number(process.env.HT_FREEZE_MS || 360 * 1000);   // 6 min
+const FT_FREEZE_MS = Number(process.env.FT_FREEZE_MS || 480 * 1000);  // 8 min
 let lastClockSeconds  = null;    // last Clock.Seconds value seen
 let lastClockChangeTs = 0;       // wall time when it last ADVANCED
 
@@ -85,6 +88,14 @@ let lastClockChangeTs = 0;       // wall time when it last ADVANCED
 let htLatched       = false;
 let htFrozenSeconds = null;      // seconds value the clock froze at, for comparison
 let ftLatched       = false;
+let ftFrozenSeconds = null;      // for FT self-heal: clock advancing = match NOT over
+let ftDeclaredTs    = 0;         // countdown waits before taking over the screen
+
+// DEBOUNCE for Running=false: one noisy message must never end a half.
+// A real break is SUSTAINED stopped state — we require it to persist.
+let stoppedAtBoundaryTs = null;  // wall time the clock first reported stopped at 45'/90'
+const HT_STOP_SUSTAIN_MS = Number(process.env.HT_STOP_SUSTAIN_MS || 25 * 1000);
+const FT_STOP_SUSTAIN_MS = Number(process.env.FT_STOP_SUSTAIN_MS || 45 * 1000);
 
 function latchHalftime() {
   if (!htLatched) console.log("[scores] HALFTIME latched — holding HT until real 2H evidence");
@@ -94,9 +105,13 @@ function latchHalftime() {
 function latchFullTime() {
   if (!ftLatched) console.log("[scores] FULL TIME latched");
   ftLatched = true;
+  ftFrozenSeconds = lastClockSeconds;
+  ftDeclaredTs = Date.now();
 }
 function releaseLatches() {
-  htLatched = false; htFrozenSeconds = null; ftLatched = false;
+  htLatched = false; htFrozenSeconds = null;
+  ftLatched = false; ftFrozenSeconds = null;
+  stoppedAtBoundaryTs = null;
 }
 
 function trackClock(seconds) {
@@ -533,9 +548,20 @@ async function handleScores(scoresData) {
 
   if (ftLatched) {
     // FT holds until the next kickoff — unless an explicit extra-time
-    // signal arrives (knockout tie continuing).
+    // signal arrives (knockout tie continuing), OR the clock starts moving
+    // again, which means the FT call was premature: SELF-HEAL back to 2H.
+    const secsNowFT = clock.Seconds != null ? Number(clock.Seconds) : null;
+    const ftClockAdvancing = secsNowFT != null && ftFrozenSeconds != null &&
+                             secsNowFT > ftFrozenSeconds + 15;
     if (clockPeriod === 3 || statusId === 31)      { releaseLatches(); period = "ET1"; }
     else if (clockPeriod === 4 || statusId === 32) { releaseLatches(); period = "ET2"; }
+    else if (ftClockAdvancing) {
+      console.log("[scores] clock moving again after FT call — SELF-HEAL, back to 2H");
+      releaseLatches();
+      if (ftCleanupTimer) { clearTimeout(ftCleanupTimer); ftCleanupTimer = null; }
+      lastAnnouncedPeriod = "2H";   // suppress duplicate transition announcements
+      period = "2H";
+    }
     else period = "FT";
   } else if (htLatched) {
     const secsNow = clock.Seconds != null ? Number(clock.Seconds) : null;
@@ -628,12 +654,25 @@ async function handleScores(scoresData) {
   // break is signalled by Running flipping false at/after 45'. This check
   // therefore runs even when the period signal is explicit. (An explicit
   // HT/FT StatusId still wins above.)
-  if (period === "1H" && !scoresInRunning &&
-      (matchTime >= 45 || (rawMins === 0 && prevMatchTime >= 44))) {
+  // Track SUSTAINED stopped state at a half boundary. A single noisy
+  // Running=false message during 45+X / 90+X stoppage must never end the
+  // half — that exact glitch declared a false FULL TIME on a live match.
+  const atBoundary = (period === "1H" && (matchTime >= 45 || (rawMins === 0 && prevMatchTime >= 44)))
+                  || (period === "2H" && matchTime >= 90);
+  if (!scoresInRunning && atBoundary) {
+    if (!stoppedAtBoundaryTs) stoppedAtBoundaryTs = Date.now();
+  } else if (scoresInRunning) {
+    stoppedAtBoundaryTs = null;   // clock running again — that stop was noise
+  }
+  const stoppedForMs = stoppedAtBoundaryTs ? Date.now() - stoppedAtBoundaryTs : 0;
+
+  if (period === "1H" && stoppedForMs >= HT_STOP_SUSTAIN_MS) {
+    console.log(`[scores] clock stopped ${Math.round(stoppedForMs/1000)}s at 45'+ — HALFTIME`);
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
     latchHalftime();
   }
-  if (period === "2H" && !scoresInRunning && matchTime >= 90) {
+  if (period === "2H" && stoppedForMs >= FT_STOP_SUSTAIN_MS) {
+    console.log(`[scores] clock stopped ${Math.round(stoppedForMs/1000)}s at 90'+ — FULL TIME`);
     period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
     latchFullTime();
   }
@@ -1140,13 +1179,16 @@ startScoresSource(handleScores);
 function checkFrozenClockTimeout() {
   if (!currentMatchState || !currentMatchState.inRunning) return;
   const frozenMs = clockFrozenFor();
+  const stoppedForMs = stoppedAtBoundaryTs ? Date.now() - stoppedAtBoundaryTs : 0;
   const p  = currentMatchState.period;
   const mt = currentMatchState.matchTime || 0;
   let newPeriod = null;
-  if (p === "1H" && mt >= 45 && frozenMs >= HT_FREEZE_MS) newPeriod = "HT";
-  if (p === "2H" && mt >= 90 && frozenMs >= FT_FREEZE_MS) newPeriod = "FT";
+  // Either signal, sustained past its threshold, declares the break — this
+  // covers feeds that go completely silent right after the whistle.
+  if (p === "1H" && mt >= 45 && (frozenMs >= HT_FREEZE_MS || stoppedForMs >= HT_STOP_SUSTAIN_MS)) newPeriod = "HT";
+  if (p === "2H" && mt >= 90 && (frozenMs >= FT_FREEZE_MS || stoppedForMs >= FT_STOP_SUSTAIN_MS)) newPeriod = "FT";
   if (!newPeriod) return;
-  console.log(`[sweep] feed silent, clock frozen ${Math.round(frozenMs / 1000)}s — declaring ${newPeriod}`);
+  console.log(`[sweep] break confirmed (frozen ${Math.round(frozenMs / 1000)}s, stopped ${Math.round(stoppedForMs / 1000)}s) — declaring ${newPeriod}`);
   if (newPeriod === "HT") latchHalftime(); else latchFullTime();
   currentMatchState = {
     ...currentMatchState,
@@ -1184,6 +1226,11 @@ let lastCountdownEmit = 0;
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
   if (currentMatchState && (currentMatchState.period === "1H" || currentMatchState.period === "2H" || currentMatchState.period === "HT")) return;
+  // Hold the FULL TIME screen for 2 minutes before the next-match countdown
+  // takes over — also gives a premature FT call room to self-heal without
+  // ever flashing the next fixture over a live match.
+  if (currentMatchState && currentMatchState.period === "FT" &&
+      Date.now() - ftDeclaredTs < 120 * 1000) return;
   if (process.env.SOURCE_MODE === "replay") return;
   if (connectedPlayers === 0) return;
   const next = getNextUpcoming();
@@ -1236,7 +1283,7 @@ setInterval(async () => {
   if (connectedPlayers === 0) return;
   if ((currentMatchState.matchTime || 0) < 2) return;   // 2-min professional lead-in
   const now = Date.now();
-  if (now - lastCommentaryTs < 75 * 1000) return;
+  if (now - lastCommentaryTs < 45 * 1000) return;
   // Broadcast pacing: never talk over a recent goal call / result / question —
   // periodic colour commentary waits for a clear gap.
   if (now - lastPunditPushTs < 25 * 1000) return;
@@ -1254,6 +1301,7 @@ setInterval(async () => {
     corners:     currentMatchState.corners || 0,
     cards:       (currentMatchState.yellowCards || 0) + (currentMatchState.redCards || 0),
     recentEvents: evLines,
+    angle:       ["momentum", "market", "stakes", "tactical"][Math.floor(Math.random() * 4)],
   }}).then(r => r && pushPunditLive(r));
 }, 15000);
 
