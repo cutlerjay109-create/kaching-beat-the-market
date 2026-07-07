@@ -29,8 +29,13 @@ function unlockAudio() {
   if (!isPlaying && queue.length > 0) playNext();
 }
 
-document.addEventListener("click",      unlockAudio, { once: true });
-document.addEventListener("touchstart", unlockAudio, { once: true });
+// Unlock on the very FIRST interaction of any kind — the sooner audio is
+// unlocked, the sooner text and voice run together from kickoff.
+document.addEventListener("click",       unlockAudio, { once: true });
+document.addEventListener("touchstart",  unlockAudio, { once: true });
+document.addEventListener("pointerdown", unlockAudio, { once: true });
+document.addEventListener("keydown",     unlockAudio, { once: true });
+document.addEventListener("scroll",      unlockAudio, { once: true, passive: true });
 
 function showPundit(reaction) {
   if (!reaction || (!reaction.text && !reaction.audioBase64)) return;
@@ -70,7 +75,8 @@ function playNext() {
   // ── TEXT-ONLY LINE ── same queue, natural reading time (no voice to sync)
   if (!item.audioBase64) {
     setPanel(item.text, true);
-    const readMs = Math.min(9000, Math.max(3500, item.text.split(/\s+/).length * 380));
+    // Generous reading time — a text line must never feel like it flashed away
+    const readMs = Math.min(12000, Math.max(5000, item.text.split(/\s+/).length * 450));
     setTimeout(() => {
       if (queue.length === 0) setPanel(null, false);
       setTimeout(playNext, GAP_MS);
