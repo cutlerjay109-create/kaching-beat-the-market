@@ -61,6 +61,19 @@ let openPredictions    = {};
 let maxHomeGoals       = 0;
 let maxAwayGoals       = 0;
 let connectedPlayers   = 0;
+let stoppageAnchorTs   = null;   // wall-clock anchor for estimating 45+X / 90+X
+let clockConvention    = null;   // "per-half" | "cumulative" — latched per match
+let socketsBySession   = {};     // sessionId -> live socket id (survives reconnects)
+let lastCardCount      = 0;
+let lastRedCount       = 0;
+let lastCornerCount    = 0;
+let recentEvents       = [];     // [{minute, type, team, detail}] — real match events
+                                 // feeding the commentator so lines reflect reality
+
+function logEvent(minute, type, team, detail) {
+  recentEvents.push({ minute, type, team, detail, ts: Date.now() });
+  if (recentEvents.length > 12) recentEvents.shift();
+}
 const demoSockets = new Set(); // sockets currently in demo mode
 const FEATURED_FIXTURE_ID = process.env.FEATURED_FIXTURE_ID ? String(process.env.FEATURED_FIXTURE_ID) : null;
 
@@ -176,6 +189,10 @@ function handlePeriodTransition(newPeriod, state) {
     if (ftCleanupTimer) { clearTimeout(ftCleanupTimer); ftCleanupTimer = null; }
     maxHomeGoals = 0;
     maxAwayGoals = 0;
+    lastCardCount = 0; lastRedCount = 0; lastCornerCount = 0;
+    recentEvents = [];
+    stoppageAnchorTs = null;
+    clockConvention = null;
     openPredictions = {};
     resetForNewMatch(2 * 60 * 1000);      // first question ~2 min after the whistle
     react({ type: "kickoff", data: { home, away } }).then(broadcastPundit);
@@ -201,6 +218,10 @@ function handlePeriodTransition(newPeriod, state) {
   else if (newPeriod === "FT") {
     console.log(`[lifecycle] FULL TIME — ${home} ${sc.home}-${sc.away} ${away}`);
     forceSettleOpenPredictions("full time");
+    // Kill any question card still on screen — no answers after the whistle
+    io.sockets.sockets.forEach((s) => {
+      if (!demoSockets.has(s.id)) s.emit("question_expired", { reason: "full_time" });
+    });
     react({ type: "full_time", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
       .then(broadcastPundit);
     // After the full-time moment has been shown, clear the state entirely so
@@ -245,14 +266,12 @@ async function handleOdds(oddsData) {
 
   const prevPeriod = (currentMatchState || {}).period || "PRE";
   const prevTime   = (currentMatchState || {}).matchTime || 0;
-  // If odds say inRunning but period is still PRE, infer period from match time
+  // If odds say inRunning but period is still PRE, infer kickoff.
+  // NOTE: the odds stream must NEVER flip 1H->2H by minute — first-half
+  // stoppage (45+X) is still 1H; the scores stream owns period detection.
   let inferredPeriod = prevPeriod;
   if (prob.inRunning && (prevPeriod === "PRE" || !prevPeriod)) {
-    inferredPeriod = prevTime <= 45 ? "1H" : "2H";
-  }
-  // Safety net: never allow "1H" to persist past minute 45 while live
-  if (prob.inRunning && inferredPeriod === "1H" && prevTime >= 46) {
-    inferredPeriod = "2H";
+    inferredPeriod = "1H";
   }
 
   currentMatchState = {
@@ -382,77 +401,154 @@ async function handleScores(scoresData) {
                     : null;
   const gameState   = (scoresData.GameState || "").toLowerCase();
 
-  // Clock.Seconds can be PER-HALF on TxLINE (resets to 0 at HT).
-  // Convert to a cumulative match minute using the clock period offset.
-  let matchTime;
+  // Raw minute from the feed. Clock.Seconds can be PER-HALF on TxLINE.
+  let rawMins = null;
   if (scoresData.match_time != null) {
-    matchTime = Number(scoresData.match_time) || 0;
+    rawMins = Number(scoresData.match_time) || 0;
   } else if (clock.Seconds != null) {
-    const rawMins = Math.floor(Number(clock.Seconds) / 60);
-    let offset = 0;
-    if      (clockPeriod === 2) offset = rawMins < 45 ? 45 : 0;   // per-half clock
-    else if (clockPeriod === 3) offset = rawMins < 90 ? 90 : 0;   // ET1
-    else if (clockPeriod === 4) offset = rawMins < 105 ? 105 : 0; // ET2
-    matchTime = rawMins + offset;
-  } else {
-    matchTime = prev.matchTime || 0;
+    rawMins = Math.floor(Number(clock.Seconds) / 60);
   }
 
   // What THIS scores message says about the clock running (not sticky)
   const scoresInRunning = scoresData.inRunning != null ? scoresData.inRunning
                         : (clock.Running != null ? clock.Running : false);
-  // Trust prev.inRunning (set by odds stream) as a fallback only —
-  // it must be allowed to go false again at HT/FT (fixed below).
   let inRunning = prev.inRunning ? prev.inRunning : scoresInRunning;
 
+  // ── PERIOD: explicit feed signals ALWAYS win ────────────────────────────
+  // The old minute-based "safety net" wrongly forced 2H at minute 46 while the
+  // real match was in FIRST-HALF STOPPAGE TIME (45+6). Explicit signals from
+  // the feed (Clock.Period / StatusId / GameState) now take absolute priority;
+  // minute-based inference runs ONLY when the feed gives no period at all.
   let period = prev.period || "PRE";
+  let explicitSignal = false;
 
   if (clockPeriod != null && !Number.isNaN(clockPeriod)) {
+    explicitSignal = true;
     if      (clockPeriod === 1) period = "1H";
     else if (clockPeriod === 2) period = "2H";
     else if (clockPeriod === 3) period = "ET1";
     else if (clockPeriod === 4) period = "ET2";
-  } else if (statusId != null && !Number.isNaN(statusId)) {
+    else if (clockPeriod === 10 || clockPeriod === 5) period = "HT";
+    else explicitSignal = false;
+  }
+  if (!explicitSignal && statusId != null && !Number.isNaN(statusId)) {
+    explicitSignal = true;
     if      (statusId === 4)  period = "1H";
     else if (statusId === 5)  period = "HT";
     else if (statusId === 6)  period = "2H";
     else if (statusId === 7)  period = "FT";
     else if (statusId === 31) period = "ET1";
     else if (statusId === 32) period = "ET2";
-  } else if (gameState && gameState !== "scheduled") {
-    if      (gameState.includes("first_half")  || gameState === "1h") period = "1H";
-    else if (gameState.includes("second_half") || gameState === "2h") period = "2H";
-    else if (gameState.includes("half_time")   || gameState === "ht") period = "HT";
-    else if (gameState.includes("full_time")   || gameState === "ft") period = "FT";
-    else if (gameState === "inprogress" || gameState === "live") {
-      period = (matchTime <= 45) ? "1H" : "2H";
-    }
-  } else if (inRunning && matchTime > 0) {
-    if      (matchTime <= 45) period = "1H";
-    else if (matchTime <= 90) period = "2H";
-    else                      period = matchTime <= 105 ? "ET1" : "ET2";
-  } else if (inRunning && period === "PRE") {
-    period = "1H";
+    else explicitSignal = false;
   }
+  if (!explicitSignal && gameState && gameState !== "scheduled") {
+    if      (gameState.includes("first_half")  || gameState === "1h") { period = "1H"; explicitSignal = true; }
+    else if (gameState.includes("second_half") || gameState === "2h") { period = "2H"; explicitSignal = true; }
+    else if (gameState.includes("half_time")   || gameState === "ht") { period = "HT"; explicitSignal = true; }
+    else if (gameState.includes("full_time")   || gameState === "ft" ||
+             gameState.includes("ended")       || gameState.includes("finished")) { period = "FT"; explicitSignal = true; }
+  }
+
+  // ── CUMULATIVE MATCH TIME + STOPPAGE TIME (45+X / 90+X) ─────────────────
+  // Real broadcasts never jump to 46' in first-half stoppage — they show 45+X.
+  // matchTime is capped at the half boundary; addedTime carries the +X, and
+  // displayTime is the exact string a professional scoreboard would show.
+  //
+  // The feed's clock convention (per-half vs cumulative) is LATCHED on the
+  // first second-half sample and kept for the whole match — a feed never
+  // switches conventions mid-game, and guessing per-sample misreads 90+X.
+  if (clockPeriod === 2 && rawMins != null && clockConvention == null) {
+    clockConvention = rawMins < 45 ? "per-half" : "cumulative";
+    console.log(`[scores] clock convention latched: ${clockConvention}`);
+  }
+  const perHalfClock = clockConvention === "per-half";
+
+  let matchTime, addedTime = 0, displayTime = null;
+
+  if (rawMins == null) {
+    matchTime = prev.matchTime || 0;
+    addedTime = prev.addedTime || 0;
+  } else if (period === "1H") {
+    if (rawMins > 45) { matchTime = 45; addedTime = rawMins - 45; }
+    else              { matchTime = rawMins; }
+  } else if (period === "2H") {
+    const cum = perHalfClock ? rawMins + 45 : rawMins;
+    if (cum > 90) { matchTime = 90; addedTime = cum - 90; }
+    else          { matchTime = Math.max(cum, 45); }
+  } else if (period === "HT") {
+    matchTime = 45; addedTime = 0;
+  } else if (period === "FT") {
+    matchTime = 90; addedTime = 0;
+  } else if (period === "ET1" || period === "ET2") {
+    const base = period === "ET1" ? 90 : 105;
+    const cum  = rawMins < base ? rawMins + base : rawMins;
+    const cap  = base + 15;
+    if (cum > cap) { matchTime = cap; addedTime = cum - cap; }
+    else           { matchTime = cum; }
+  } else {
+    matchTime = rawMins;
+  }
+
+  // If the feed's clock FREEZES at 45:00 / 90:00 during stoppage (common),
+  // estimate the added minutes from the wall clock so our display keeps
+  // moving exactly like the broadcast does. (feature: accurate real time)
+  if (inRunning && addedTime === 0 &&
+      ((period === "1H" && matchTime === 45) || (period === "2H" && matchTime === 90))) {
+    if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
+    addedTime = Math.max(1, Math.floor((Date.now() - stoppageAnchorTs) / 60000) + 1);
+  } else if (addedTime > 0) {
+    if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
+    // Feed reports stoppage directly — trust it, keep the anchor for continuity
+  } else {
+    stoppageAnchorTs = null;
+  }
+
+  displayTime =
+      period === "HT" ? "HT"
+    : period === "FT" ? "FT"
+    : addedTime > 0   ? `${matchTime}+${addedTime}'`
+    : `${matchTime || 0}'`;
+
   const prevMatchTime = prev.matchTime || 0;
 
-  // Detect halftime: matchTime drops to 0 or stuck at 45 while clock stopped.
-  // Uses scoresInRunning (this message), not the sticky flag which never went false.
-  if (!scoresInRunning && prev.period === "1H" && matchTime === 0 && prevMatchTime >= 44) period = "HT";
-  if (!scoresInRunning && period === "1H" && matchTime === 45 && prevMatchTime >= 44) period = "HT";
+  // ── HT / FT: the whistle is the clock STOPPING ──────────────────────────
+  // TxLINE keeps reporting Clock.Period=1 during the halftime break — the
+  // break is signalled by Running flipping false at/after 45'. This check
+  // therefore runs even when the period signal is explicit. (An explicit
+  // HT/FT StatusId still wins above.)
+  if (period === "1H" && !scoresInRunning &&
+      (matchTime >= 45 || (rawMins === 0 && prevMatchTime >= 44))) {
+    period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
+  }
+  if (period === "2H" && !scoresInRunning && matchTime >= 90) {
+    period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
+  }
+  // Second half restarts after the break
+  if (period === "HT" && scoresInRunning && rawMins != null &&
+      (rawMins >= 45 || clockConvention === "per-half" || rawMins < 45)) {
+    period = "2H";
+    matchTime = clockConvention === "per-half" || rawMins < 45
+              ? Math.min(rawMins + 45, 90)
+              : Math.max(Math.min(rawMins, 90), 46);
+    displayTime = `${matchTime}'`;
+  }
 
-  // Detect second half: matchTime goes to 46+ after HT
-  if (matchTime >= 46 && (period === "HT" || prev.period === "HT") && scoresInRunning) period = "2H";
+  // Minute-based inference ONLY when the feed never says which period it is.
+  // Generous stoppage allowance: 1H can legitimately run to 45+15.
+  if (!explicitSignal) {
+    if (inRunning && period === "PRE" && matchTime > 0) {
+      period = matchTime <= 45 ? "1H" : "2H";
+    }
+    // A raw minute far beyond any plausible first-half stoppage → it's 2H
+    if (inRunning && period === "1H" && rawMins != null && rawMins >= 60) {
+      period = "2H";
+      matchTime = Math.min(rawMins, 90);
+      addedTime = rawMins > 90 ? rawMins - 90 : 0;
+      displayTime = addedTime > 0 ? `90+${addedTime}'` : `${matchTime}'`;
+    }
+  }
 
-  // ── FINAL SAFETY NET (fixes "60' but still 1H") ────────────────────────
-  // No matter which detection branch ran (or failed), a live match past
-  // minute 45 can never still be first half.
-  if (inRunning && period === "1H" && matchTime >= 46) period = "2H";
-  if (inRunning && period === "PRE" && matchTime > 0)  period = matchTime <= 45 ? "1H" : "2H";
-
-  // inRunning must reflect reality: clock is stopped at HT and match over at FT.
-  // Previously it was sticky-true forever, which blocked HT/FT detection and
-  // the next-match countdown after full time.
+  // inRunning must reflect reality: clock stopped at HT, match over at FT.
   if (period === "FT" || period === "HT") inRunning = false;
 
   currentMatchState = {
@@ -461,7 +557,7 @@ async function handleScores(scoresData) {
     fixtureId: fid != null ? fid : (currentMatchState || {}).fixtureId,
     goals: (score.home || 0) + (score.away || 0),
     corners, yellowCards, redCards,
-    matchTime, period, inRunning,
+    matchTime, addedTime, displayTime, period, inRunning,
   };
 
   // Fire lifecycle announcements the instant the phase changes
@@ -486,12 +582,34 @@ async function handleScores(scoresData) {
     const livePeriod = period === "1H" || period === "2H" || period === "ET1" || period === "ET2";
     if (inRunning && livePeriod) {
       console.log(`[scores] GOAL! ${scoringTeam} ${scoreStr}`);
-      react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
+      logEvent(currentMatchState.displayTime || matchTime, "goal", scoringTeam, scoreStr);
+      react({ type: "goal", data: { team: scoringTeam, score: scoreStr, minute: currentMatchState.displayTime || matchTime + "'" } })
         .then(r => r && push.pushPundit(r, demoSockets));
     }
     maxHomeGoals = cleanHome;
     maxAwayGoals = cleanAway;
   }
+
+  // Real-event log for the commentator: bookings and corners as they happen.
+  const totalCards = (yellowCards || 0) + (redCards || 0);
+  if (totalCards > lastCardCount && inRunning &&
+      (period === "1H" || period === "2H")) {
+    logEvent(currentMatchState.displayTime || matchTime, "card", null,
+             redCards > lastRedCount ? "red card" : "yellow card");
+    if (redCards > lastRedCount) {
+      react({ type: "red_card", data: {
+        home: homeTeam, away: awayTeam,
+        minute: currentMatchState.displayTime || matchTime + "'",
+        score: `${score.home || 0}-${score.away || 0}`,
+      }}).then(r => r && push.pushPundit(r, demoSockets));
+    }
+  }
+  lastCardCount = totalCards;
+  lastRedCount  = redCards || 0;
+  if ((corners || 0) > lastCornerCount && inRunning) {
+    logEvent(currentMatchState.displayTime || matchTime, "corner", null, `corner #${corners}`);
+  }
+  lastCornerCount = corners || 0;
   score.home = cleanHome;
   score.away = cleanAway;
   currentMatchState.score = score;
@@ -521,16 +639,19 @@ async function resolveOpenPredictions() {
       pred.sessionId, predId, result.correct,
       result.secondsBefore, result.oddsBefore, result.oddsAfter
     );
-    // Player must always SEE the outcome, even if scoring couldn't persist
-    io.to(pred.socketId).emit("prediction_result", {
-      predictionId: predId,
-      correct:      result.correct,
-      points:       scoreResult ? scoreResult.points      : 0,
-      timingLabel:  scoreResult ? scoreResult.timingLabel : (result.correct ? "On the Nose" : "Wrong"),
-      newStreak:    scoreResult ? scoreResult.newStreak   : null,
-      newScore:     scoreResult ? scoreResult.newScore    : null,
-      question:     question.text,
-      answer:       pred.answer,
+    // Deliver to the CURRENT socket for this session — phones reconnect with a
+    // new socket id mid-window, which used to send the win card into the void.
+    const targetId = socketsBySession[pred.sessionId] || pred.socketId;
+    io.to(targetId).emit("prediction_result", {
+      predictionId:  predId,
+      correct:       result.correct,
+      points:        scoreResult ? scoreResult.points      : 0,
+      timingLabel:   scoreResult ? scoreResult.timingLabel : (result.correct ? "On the Nose" : "Wrong"),
+      newStreak:     scoreResult ? scoreResult.newStreak   : null,
+      newScore:      scoreResult ? scoreResult.newScore    : null,
+      secondsBefore: result.secondsBefore || 0,
+      question:      question.text,
+      answer:        pred.answer,
     });
     if (!scoreResult) continue;
 
@@ -597,9 +718,10 @@ io.on("connection", (socket) => {
       if (extracted) oddsBefore = extracted.home;
     }
     const predId = await savePrediction(sessionId, question.id, answer, oddsBefore);
+    socketsBySession[sessionId] = socket.id;   // results follow the session, not a dead socket
     openPredictions[predId] = {
       sessionId, socketId: socket.id, question, answer,
-      matchStateBefore: { ...currentMatchState },
+      matchStateBefore: { ...currentMatchState, score: { ...(currentMatchState.score || {}) } },
     };
     socket.emit("prediction_accepted", { predictionId: predId, question: question.text, answer });
   });
@@ -941,24 +1063,37 @@ setInterval(() => {
   });
 }, 1000);
 
+// ── LIVE COMMENTARY ─────────────────────────────────────────────────────────
+// A real broadcast commentator speaks regularly throughout the match — not
+// only when a player answers a question. Cadence ~75 s, always built from
+// REAL live data: exact displayed minute (incl. 45+X), score, market state,
+// and the actual recent events (goals, cards, corners) from the feed.
+// Silent for the first 2 minutes so the match establishes itself first.
 let lastCommentaryTs = 0;
 setInterval(async () => {
   if (!currentMatchState || !currentMatchState.inRunning) return;
-  if (currentMatchState.period === "FT") return;
+  const p = currentMatchState.period;
+  if (p !== "1H" && p !== "2H" && p !== "ET1" && p !== "ET2") return;
   if (connectedPlayers === 0) return;
+  if ((currentMatchState.matchTime || 0) < 2) return;   // 2-min professional lead-in
   const now = Date.now();
-  if (now - lastCommentaryTs < 4 * 60 * 1000) return;
+  if (now - lastCommentaryTs < 75 * 1000) return;
   lastCommentaryTs = now;
+  const evLines = recentEvents.slice(-3).map(e =>
+    `${e.minute}${typeof e.minute === "number" ? "'" : ""} — ${e.type}${e.team ? " " + e.team : ""}${e.detail ? " (" + e.detail + ")" : ""}`);
   react({ type: "commentary", data: {
-    minute:   currentMatchState.matchTime || 0,
-    homeTeam: currentMatchState.homeTeam  || "Home",
-    awayTeam: currentMatchState.awayTeam  || "Away",
-    homeProb: Math.round((currentMatchState.homeProb || 0.5) * 100),
-    awayProb: Math.round((currentMatchState.awayProb || 0.5) * 100),
-    score:    `${(currentMatchState.score || {}).home || 0}-${(currentMatchState.score || {}).away || 0}`,
-    period:   currentMatchState.period || "",
+    minute:      currentMatchState.displayTime || `${currentMatchState.matchTime || 0}'`,
+    period:      p,
+    homeTeam:    currentMatchState.homeTeam || "Home",
+    awayTeam:    currentMatchState.awayTeam || "Away",
+    homeProb:    Math.round((currentMatchState.homeProb || 0.5) * 100),
+    awayProb:    Math.round((currentMatchState.awayProb || 0.5) * 100),
+    score:       `${(currentMatchState.score || {}).home || 0}-${(currentMatchState.score || {}).away || 0}`,
+    corners:     currentMatchState.corners || 0,
+    cards:       (currentMatchState.yellowCards || 0) + (currentMatchState.redCards || 0),
+    recentEvents: evLines,
   }}).then(r => r && push.pushPundit(r, demoSockets));
-}, 30000);
+}, 15000);
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Kaching Beat-the-Market running on http://localhost:${PORT}`);
