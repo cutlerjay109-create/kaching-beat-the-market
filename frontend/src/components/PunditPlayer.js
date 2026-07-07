@@ -1,107 +1,136 @@
-// PunditPlayer.js — plays the AI pundit voice and shows the text.
+// PunditPlayer.js — plays the AI commentator voice with its text as ONE unit.
+//
+// PROFESSIONAL RULES (all enforced here):
+//   • Text and voice are inseparable: the text appears the instant ITS clip
+//     starts and stays on screen until ITS clip finishes — never earlier,
+//     never later, never swapped mid-speech.
+//   • Strictly one voice at a time. The current clip is always stopped
+//     before anything else may start — overlap is impossible.
+//   • Text-only reactions (voice unavailable) join the SAME queue and hold
+//     the screen for a natural reading time, so they can never stomp the
+//     text of a clip that is currently speaking.
+//   • A short breath (700 ms) separates consecutive lines, like a real
+//     broadcast rhythm.
+//   • The queue is capped: if the commentator falls behind, the oldest
+//     unplayed lines are dropped so the audio never lags the match.
 
-let audioQueue    = [];
+let queue         = [];      // [{ text, audioBase64 }]
 let isPlaying     = false;
+let currentAudio  = null;    // the ONLY audio element allowed to exist
 let audioUnlocked = false;
+const MAX_QUEUE   = 3;
+const GAP_MS      = 700;
 
 function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
   const silence = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6ur///////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA");
   silence.play().catch(() => {});
-  if (!isPlaying && audioQueue.length > 0) playNext();
+  if (!isPlaying && queue.length > 0) playNext();
 }
 
 document.addEventListener("click",      unlockAudio, { once: true });
 document.addEventListener("touchstart", unlockAudio, { once: true });
 
-// Text queue matches audio queue — each text pairs with its audio
-let textQueue = [];
-
 function showPundit(reaction) {
-  const el = document.getElementById("pundit-player");
-  if (!el) return;
-  if (reaction.audioBase64) {
-    // Queue both text and audio together
-    textQueue.push(reaction.text || "");
-    audioQueue.push(reaction.audioBase64);
-    if (!isPlaying) playNext();
-  } else if (reaction.text) {
-    // Text only — show for 5 seconds
-    const textEl = document.getElementById("pundit-text");
-    if (textEl) textEl.textContent = reaction.text;
-    el.classList.add("visible");
-    setTimeout(() => el.classList.remove("visible"), 5000);
+  if (!reaction || (!reaction.text && !reaction.audioBase64)) return;
+  // Text + voice enter the queue TOGETHER as one unit
+  queue.push({ text: reaction.text || "", audioBase64: reaction.audioBase64 || null });
+  // Never let the commentator fall behind the match — drop the oldest
+  // unplayed lines (the currently-speaking clip is never touched).
+  while (queue.length > MAX_QUEUE) queue.shift();
+  if (!isPlaying) playNext();
+}
+
+function setPanel(text, visible) {
+  const el     = document.getElementById("pundit-player");
+  const textEl = document.getElementById("pundit-text");
+  if (textEl && text != null) textEl.textContent = text;
+  if (el) el.classList.toggle("visible", !!visible);
+}
+
+// Stop whatever is currently speaking — the single point of truth.
+function stopCurrent() {
+  if (currentAudio) {
+    try { currentAudio.pause(); } catch (e) {}
+    if (currentAudio._url) { try { URL.revokeObjectURL(currentAudio._url); } catch (e) {} }
+    currentAudio = null;
   }
 }
 
 function playNext() {
-  if (audioQueue.length === 0) {
+  if (queue.length === 0) {
     isPlaying = false;
-    // Hide pundit panel when queue is empty
-    const el = document.getElementById("pundit-player");
-    if (el) el.classList.remove("visible");
+    setPanel(null, false);           // hide only when there is nothing left
     return;
   }
   isPlaying = true;
-  const base64 = audioQueue.shift();
-  const text   = textQueue.shift() || "";
+  const item = queue.shift();
 
-  // Show text for this audio clip
-  const el     = document.getElementById("pundit-player");
-  const textEl = document.getElementById("pundit-text");
-  if (textEl) textEl.textContent = text;
-  if (el) el.classList.add("visible");
+  // ── TEXT-ONLY LINE ── same queue, natural reading time (no voice to sync)
+  if (!item.audioBase64) {
+    setPanel(item.text, true);
+    const readMs = Math.min(9000, Math.max(3500, item.text.split(/\s+/).length * 380));
+    setTimeout(() => {
+      if (queue.length === 0) setPanel(null, false);
+      setTimeout(playNext, GAP_MS);
+    }, readMs);
+    return;
+  }
 
+  // ── VOICED LINE ── text appears WITH the clip, leaves WITH the clip
   try {
-    const binary = atob(base64);
+    const binary = atob(item.audioBase64);
     const bytes  = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob  = new Blob([bytes], { type: "audio/mpeg" });
-    const url   = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.volume  = 1.0;
+    const url    = URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
 
-    // FAILSAFE: the text must NEVER stay on screen forever. If 'ended' never
-    // fires (codec quirk, tab suspend), force-advance after the clip length
-    // (or 20 s max if duration is unknown).
+    stopCurrent();                    // absolute guarantee: nothing else is speaking
+    const audio  = new Audio(url);
+    audio._url   = url;
+    audio.volume = 1.0;
+    currentAudio = audio;
+
     let advanced = false;
     const advance = () => {
       if (advanced) return;
       advanced = true;
-      URL.revokeObjectURL(url);
-      setTimeout(() => {
-        if (audioQueue.length === 0 && el) el.classList.remove("visible");
-        playNext();
-      }, 400);
+      stopCurrent();                  // kills this clip if it is somehow still going
+      if (queue.length === 0) setPanel(null, false);   // text leaves WITH the voice
+      setTimeout(playNext, GAP_MS);   // a breath before the next line
     };
-    let failsafe = setTimeout(advance, 20000);
+
+    // Failsafe only for a clip whose 'ended' never fires — generous 30 s so a
+    // full line is never cut off; tightened to real duration once known.
+    let failsafe = setTimeout(advance, 30000);
     audio.onloadedmetadata = () => {
       if (isFinite(audio.duration) && audio.duration > 0) {
         clearTimeout(failsafe);
-        failsafe = setTimeout(advance, audio.duration * 1000 + 2500);
+        failsafe = setTimeout(advance, audio.duration * 1000 + 3000);
       }
     };
     audio.onended = () => { clearTimeout(failsafe); advance(); };
     audio.onerror = () => { clearTimeout(failsafe); advance(); };
-    audio.play().catch(e => {
+
+    audio.play().then(() => {
+      // Voice is actually speaking — NOW the text appears with it
+      setPanel(item.text, true);
+    }).catch(e => {
       console.warn("[pundit] autoplay blocked:", e.message);
       clearTimeout(failsafe);
-      // Hide the panel — text must not sit on screen while nothing plays.
-      // The clip is re-queued and will play after the user's first tap.
-      if (el) el.classList.remove("visible");
-      audioQueue.unshift(base64);
-      textQueue.unshift(text);
+      stopCurrent();
+      setPanel(null, false);          // no silent text on screen
+      queue.unshift(item);            // replays after the user's first tap
       isPlaying = false;
     });
   } catch (e) {
     console.error("[pundit] playNext error:", e.message);
-    playNext();
+    setTimeout(playNext, GAP_MS);
   }
 }
 
 function flushAudioQueue() {
-  if (!isPlaying && audioQueue.length > 0) playNext();
+  if (!isPlaying && queue.length > 0) playNext();
 }
 
 if (typeof module !== "undefined") module.exports = { showPundit, flushAudioQueue };
