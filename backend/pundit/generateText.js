@@ -77,6 +77,12 @@ Deliver ONE electrifying goal call — the signature moment of a great commentat
 The live market has moved sharply: ${data.team}'s win probability has gone from ${data.before}% to ${data.after}%.
 Deliver ONE commentator line interpreting what the market is telling us about the flow of this match — the tone of an analyst who understands numbers and football.`;
   }
+  else if (type === "extra_time") {
+    prompt = `${PERSONA}
+
+Ninety minutes could not separate them — ${data.home} ${data.score} ${data.away}, and we go to EXTRA TIME.
+Deliver ONE commentator line taking us into extra time — thirty more minutes to find a winner, weight and drama, fully professional.`;
+  }
   else if (type === "red_card") {
     prompt = `${PERSONA}
 
