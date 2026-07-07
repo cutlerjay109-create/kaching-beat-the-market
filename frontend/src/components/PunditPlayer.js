@@ -61,17 +61,35 @@ function playNext() {
     const url   = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.volume  = 1.0;
-    audio.onended = () => {
+
+    // FAILSAFE: the text must NEVER stay on screen forever. If 'ended' never
+    // fires (codec quirk, tab suspend), force-advance after the clip length
+    // (or 20 s max if duration is unknown).
+    let advanced = false;
+    const advance = () => {
+      if (advanced) return;
+      advanced = true;
       URL.revokeObjectURL(url);
-      // Hide text 500ms after audio ends then play next
       setTimeout(() => {
         if (audioQueue.length === 0 && el) el.classList.remove("visible");
         playNext();
-      }, 500);
+      }, 400);
     };
-    audio.onerror = () => { URL.revokeObjectURL(url); playNext(); };
+    let failsafe = setTimeout(advance, 20000);
+    audio.onloadedmetadata = () => {
+      if (isFinite(audio.duration) && audio.duration > 0) {
+        clearTimeout(failsafe);
+        failsafe = setTimeout(advance, audio.duration * 1000 + 2500);
+      }
+    };
+    audio.onended = () => { clearTimeout(failsafe); advance(); };
+    audio.onerror = () => { clearTimeout(failsafe); advance(); };
     audio.play().catch(e => {
       console.warn("[pundit] autoplay blocked:", e.message);
+      clearTimeout(failsafe);
+      // Hide the panel — text must not sit on screen while nothing plays.
+      // The clip is re-queued and will play after the user's first tap.
+      if (el) el.classList.remove("visible");
       audioQueue.unshift(base64);
       textQueue.unshift(text);
       isPlaying = false;
@@ -86,4 +104,4 @@ function flushAudioQueue() {
   if (!isPlaying && audioQueue.length > 0) playNext();
 }
 
-module.exports = { showPundit, flushAudioQueue };
+if (typeof module !== "undefined") module.exports = { showPundit, flushAudioQueue };
