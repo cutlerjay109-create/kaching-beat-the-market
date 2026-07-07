@@ -63,6 +63,61 @@ let maxAwayGoals       = 0;
 let connectedPlayers   = 0;
 let stoppageAnchorTs   = null;   // wall-clock anchor for estimating 45+X / 90+X
 let clockConvention    = null;   // "per-half" | "cumulative" — latched per match
+
+// ── FROZEN-CLOCK DETECTOR ──────────────────────────────────────────────────
+// Second, independent halftime/full-time detector: some feeds keep
+// Clock.Running=true through the break — but the SECONDS stop advancing.
+// A clock frozen at 45'+ for HT_FREEZE_MS is halftime; frozen at 90'+ for
+// FT_FREEZE_MS is full time (longer threshold so a knockout tie heading to
+// extra time is never cut off — the ~5 min ET break stays untouched).
+const HT_FREEZE_MS = Number(process.env.HT_FREEZE_MS || 150 * 1000);
+const FT_FREEZE_MS = Number(process.env.FT_FREEZE_MS || 240 * 1000);
+let lastClockSeconds  = null;    // last Clock.Seconds value seen
+let lastClockChangeTs = 0;       // wall time when it last ADVANCED
+
+// ── HT / FT LATCHES ─────────────────────────────────────────────────────────
+// Once halftime is declared, feeds that keep sending Period=1 / Running=true
+// through the break must NOT drag the display back to "1H 45+X" (the exact
+// flicker seen on a real match). HT stays latched until REAL second-half
+// evidence arrives: Clock.Period=2, StatusId=6, the seconds visibly advancing
+// again, or the clock resetting for a per-half restart. FT latches until the
+// next kickoff or an explicit extra-time signal.
+let htLatched       = false;
+let htFrozenSeconds = null;      // seconds value the clock froze at, for comparison
+let ftLatched       = false;
+
+function latchHalftime() {
+  if (!htLatched) console.log("[scores] HALFTIME latched — holding HT until real 2H evidence");
+  htLatched = true;
+  htFrozenSeconds = lastClockSeconds;
+}
+function latchFullTime() {
+  if (!ftLatched) console.log("[scores] FULL TIME latched");
+  ftLatched = true;
+}
+function releaseLatches() {
+  htLatched = false; htFrozenSeconds = null; ftLatched = false;
+}
+
+function trackClock(seconds) {
+  if (seconds == null) return;
+  const s = Number(seconds);
+  if (Number.isNaN(s)) return;
+  if (s !== lastClockSeconds) {
+    lastClockSeconds  = s;
+    lastClockChangeTs = Date.now();
+  }
+}
+
+function clockFrozenFor() {
+  if (lastClockSeconds == null || !lastClockChangeTs) return 0;
+  return Date.now() - lastClockChangeTs;
+}
+
+function resetClockTracker() {
+  lastClockSeconds  = null;
+  lastClockChangeTs = 0;
+}
 let socketsBySession   = {};     // sessionId -> live socket id (survives reconnects)
 let lastCardCount      = 0;
 let lastRedCount       = 0;
@@ -156,11 +211,21 @@ function getNextUpcoming() {
 let lastAnnouncedPeriod = "PRE";
 let ftCleanupTimer = null;
 
+let lastPunditPushTs = 0;   // pacing: broadcast rhythm, no pile-ups
+
 function broadcastPundit(r) {
   if (!r) return;
+  lastPunditPushTs = Date.now();
   io.sockets.sockets.forEach((s) => {
     if (!demoSockets.has(s.id)) s.emit("pundit_reaction", r);
   });
+}
+
+// Stamped wrapper so every live pundit line updates the pacing clock
+function pushPunditLive(r) {
+  if (!r) return;
+  lastPunditPushTs = Date.now();
+  pushPunditLive(r);
 }
 
 // Settle every open prediction RIGHT NOW (window truncated by HT/FT):
@@ -193,6 +258,8 @@ function handlePeriodTransition(newPeriod, state) {
     recentEvents = [];
     stoppageAnchorTs = null;
     clockConvention = null;
+    resetClockTracker();
+    releaseLatches();
     openPredictions = {};
     resetForNewMatch(2 * 60 * 1000);      // first question ~2 min after the whistle
     react({ type: "kickoff", data: { home, away } }).then(broadcastPundit);
@@ -211,6 +278,15 @@ function handlePeriodTransition(newPeriod, state) {
     console.log("[lifecycle] SECOND HALF underway");
     resetForNewMatch(60 * 1000);          // questions resume ~1 min into the half
     react({ type: "second_half", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
+      .then(broadcastPundit);
+  }
+
+  // ── EXTRA TIME ── a knockout tie resumes after the FT whistle
+  else if ((newPeriod === "ET1" || newPeriod === "ET2") && prevP !== "ET1") {
+    console.log(`[lifecycle] EXTRA TIME (${newPeriod}) — ${home} ${sc.home}-${sc.away} ${away}`);
+    if (ftCleanupTimer) { clearTimeout(ftCleanupTimer); ftCleanupTimer = null; }
+    resetForNewMatch(60 * 1000);
+    react({ type: "extra_time", data: { home, away, score: `${sc.home || 0}-${sc.away || 0}` } })
       .then(broadcastPundit);
   }
 
@@ -449,6 +525,38 @@ async function handleScores(scoresData) {
              gameState.includes("ended")       || gameState.includes("finished")) { period = "FT"; explicitSignal = true; }
   }
 
+  // ── APPLY LATCHES ────────────────────────────────────────────────────────
+  // The break, once declared, holds against a feed that keeps reporting
+  // Period=1/Running=true. Only genuine evidence releases it.
+  if (period === "HT") latchHalftime();
+  if (period === "FT") latchFullTime();
+
+  if (ftLatched) {
+    // FT holds until the next kickoff — unless an explicit extra-time
+    // signal arrives (knockout tie continuing).
+    if (clockPeriod === 3 || statusId === 31)      { releaseLatches(); period = "ET1"; }
+    else if (clockPeriod === 4 || statusId === 32) { releaseLatches(); period = "ET2"; }
+    else period = "FT";
+  } else if (htLatched) {
+    const secsNow = clock.Seconds != null ? Number(clock.Seconds) : null;
+    const frozenAt = htFrozenSeconds != null ? htFrozenSeconds : 45 * 60;
+    const clockAdvancing = secsNow != null && secsNow > frozenAt + 15;     // ball rolling again
+    const clockResetLow  = secsNow != null && secsNow < Math.min(frozenAt, 2700) - 600; // per-half restart
+    const explicit2H     = clockPeriod === 2 || statusId === 6 ||
+                           gameState.includes("second_half") || gameState === "2h";
+    if (explicit2H || clockAdvancing || clockResetLow) {
+      htLatched = false; htFrozenSeconds = null;
+      period = "2H";
+      // A low clock reset with no Period=2 signal means a per-half clock
+      if (clockResetLow && clockConvention == null) {
+        clockConvention = "per-half";
+        console.log("[scores] clock convention latched: per-half (via 2H restart)");
+      }
+    } else {
+      period = "HT";
+    }
+  }
+
   // ── CUMULATIVE MATCH TIME + STOPPAGE TIME (45+X / 90+X) ─────────────────
   // Real broadcasts never jump to 46' in first-half stoppage — they show 45+X.
   // matchTime is capped at the half boundary; addedTime carries the +X, and
@@ -495,7 +603,8 @@ async function handleScores(scoresData) {
   if (inRunning && addedTime === 0 &&
       ((period === "1H" && matchTime === 45) || (period === "2H" && matchTime === 90))) {
     if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
-    addedTime = Math.max(1, Math.floor((Date.now() - stoppageAnchorTs) / 60000) + 1);
+    // Cap at +15 — beyond that the frozen-clock detector declares the break
+    addedTime = Math.min(15, Math.max(1, Math.floor((Date.now() - stoppageAnchorTs) / 60000) + 1));
   } else if (addedTime > 0) {
     if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
     // Feed reports stoppage directly — trust it, keep the anchor for continuity
@@ -511,6 +620,9 @@ async function handleScores(scoresData) {
 
   const prevMatchTime = prev.matchTime || 0;
 
+  // Feed the frozen-clock tracker with this message's raw seconds
+  if (clock.Seconds != null) trackClock(clock.Seconds);
+
   // ── HT / FT: the whistle is the clock STOPPING ──────────────────────────
   // TxLINE keeps reporting Clock.Period=1 during the halftime break — the
   // break is signalled by Running flipping false at/after 45'. This check
@@ -519,19 +631,33 @@ async function handleScores(scoresData) {
   if (period === "1H" && !scoresInRunning &&
       (matchTime >= 45 || (rawMins === 0 && prevMatchTime >= 44))) {
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
+    latchHalftime();
   }
   if (period === "2H" && !scoresInRunning && matchTime >= 90) {
     period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
+    latchFullTime();
   }
-  // Second half restarts after the break
-  if (period === "HT" && scoresInRunning && rawMins != null &&
-      (rawMins >= 45 || clockConvention === "per-half" || rawMins < 45)) {
-    period = "2H";
-    matchTime = clockConvention === "per-half" || rawMins < 45
-              ? Math.min(rawMins + 45, 90)
-              : Math.max(Math.min(rawMins, 90), 46);
-    displayTime = `${matchTime}'`;
+
+  // ── SECOND DETECTOR: clock FROZEN while Running stays true ──────────────
+  // Some fixtures never flip Running=false at the break. If the seconds have
+  // not advanced for the threshold while at the half boundary, the half is
+  // over no matter what the Running flag claims.
+  const frozenMs = clockFrozenFor();
+  if (period === "1H" && matchTime >= 45 && frozenMs >= HT_FREEZE_MS) {
+    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 45'+ — declaring HALFTIME`);
+    period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
+    latchHalftime();
   }
+  if (period === "2H" && matchTime >= 90 && frozenMs >= FT_FREEZE_MS) {
+    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 90'+ — declaring FULL TIME`);
+    period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
+    latchFullTime();
+  }
+
+  // (Second-half restarts are handled by the HT latch release above —
+  // real evidence only: Period=2, StatusId=6, or the clock moving again.)
+  if (period === "HT") { matchTime = 45; addedTime = 0; displayTime = "HT"; }
+  if (period === "FT") { matchTime = 90; addedTime = 0; displayTime = "FT"; }
 
   // Minute-based inference ONLY when the feed never says which period it is.
   // Generous stoppage allowance: 1H can legitimately run to 45+15.
@@ -584,7 +710,7 @@ async function handleScores(scoresData) {
       console.log(`[scores] GOAL! ${scoringTeam} ${scoreStr}`);
       logEvent(currentMatchState.displayTime || matchTime, "goal", scoringTeam, scoreStr);
       react({ type: "goal", data: { team: scoringTeam, score: scoreStr, minute: currentMatchState.displayTime || matchTime + "'" } })
-        .then(r => r && push.pushPundit(r, demoSockets));
+        .then(r => r && pushPunditLive(r));
     }
     maxHomeGoals = cleanHome;
     maxAwayGoals = cleanAway;
@@ -601,7 +727,7 @@ async function handleScores(scoresData) {
         home: homeTeam, away: awayTeam,
         minute: currentMatchState.displayTime || matchTime + "'",
         score: `${score.home || 0}-${score.away || 0}`,
-      }}).then(r => r && push.pushPundit(r, demoSockets));
+      }}).then(r => r && pushPunditLive(r));
     }
   }
   lastCardCount = totalCards;
@@ -639,11 +765,12 @@ async function resolveOpenPredictions() {
       pred.sessionId, predId, result.correct,
       result.secondsBefore, result.oddsBefore, result.oddsAfter
     );
-    // Deliver to the CURRENT socket for this session — phones reconnect with a
-    // new socket id mid-window, which used to send the win card into the void.
-    const targetId = socketsBySession[pred.sessionId] || pred.socketId;
-    io.to(targetId).emit("prediction_result", {
+    // RECONNECT-PROOF DELIVERY: phones drop/reopen sockets constantly, so a
+    // socket-id-targeted emit can vanish. Broadcast to all live sockets with
+    // the sessionId attached — the client shows only its own result.
+    const payload = {
       predictionId:  predId,
+      sessionId:     pred.sessionId,
       correct:       result.correct,
       points:        scoreResult ? scoreResult.points      : 0,
       timingLabel:   scoreResult ? scoreResult.timingLabel : (result.correct ? "On the Nose" : "Wrong"),
@@ -652,13 +779,16 @@ async function resolveOpenPredictions() {
       secondsBefore: result.secondsBefore || 0,
       question:      question.text,
       answer:        pred.answer,
+    };
+    io.sockets.sockets.forEach((s) => {
+      if (!demoSockets.has(s.id)) s.emit("prediction_result", payload);
     });
     if (!scoreResult) continue;
 
     react({ type: "prediction_result", data: {
       correct: result.correct, timingLabel: scoreResult.timingLabel,
       secondsBefore: result.secondsBefore, question: question.text, answer: pred.answer,
-    }}).then(r => r && push.pushPundit(r, demoSockets));
+    }}).then(r => r && pushPunditLive(r));
 
     const top = await getTopPlayers(20);
     push.pushLeaderboard(top);
@@ -1005,8 +1135,37 @@ startScoresSource(handleScores);
 // Feeds can go quiet for stretches; without this, a window that closed at
 // minute 63 wouldn't announce its result until the next feed message.
 // This sweep guarantees results come out within 5 s of the window closing.
+// It also runs the frozen-clock detector so halftime/full-time is declared
+// even if the feed sends NOTHING during the break.
+function checkFrozenClockTimeout() {
+  if (!currentMatchState || !currentMatchState.inRunning) return;
+  const frozenMs = clockFrozenFor();
+  const p  = currentMatchState.period;
+  const mt = currentMatchState.matchTime || 0;
+  let newPeriod = null;
+  if (p === "1H" && mt >= 45 && frozenMs >= HT_FREEZE_MS) newPeriod = "HT";
+  if (p === "2H" && mt >= 90 && frozenMs >= FT_FREEZE_MS) newPeriod = "FT";
+  if (!newPeriod) return;
+  console.log(`[sweep] feed silent, clock frozen ${Math.round(frozenMs / 1000)}s — declaring ${newPeriod}`);
+  if (newPeriod === "HT") latchHalftime(); else latchFullTime();
+  currentMatchState = {
+    ...currentMatchState,
+    period: newPeriod,
+    matchTime:  newPeriod === "HT" ? 45 : 90,
+    addedTime:  0,
+    displayTime: newPeriod,
+    inRunning:  false,
+  };
+  handlePeriodTransition(newPeriod, currentMatchState);
+  const state = { ...currentMatchState, _mode: process.env.SOURCE_MODE || "live" };
+  io.sockets.sockets.forEach((s) => {
+    if (!demoSockets.has(s.id)) s.emit("match_state", state);
+  });
+}
+
 setInterval(() => {
   if (!currentMatchState) return;
+  checkFrozenClockTimeout();
   resolveOpenPredictions().catch(e =>
     console.error("[sweep] resolve error:", e.message));
 }, 5000);
@@ -1078,6 +1237,9 @@ setInterval(async () => {
   if ((currentMatchState.matchTime || 0) < 2) return;   // 2-min professional lead-in
   const now = Date.now();
   if (now - lastCommentaryTs < 75 * 1000) return;
+  // Broadcast pacing: never talk over a recent goal call / result / question —
+  // periodic colour commentary waits for a clear gap.
+  if (now - lastPunditPushTs < 25 * 1000) return;
   lastCommentaryTs = now;
   const evLines = recentEvents.slice(-3).map(e =>
     `${e.minute}${typeof e.minute === "number" ? "'" : ""} — ${e.type}${e.team ? " " + e.team : ""}${e.detail ? " (" + e.detail + ")" : ""}`);
@@ -1092,7 +1254,7 @@ setInterval(async () => {
     corners:     currentMatchState.corners || 0,
     cards:       (currentMatchState.yellowCards || 0) + (currentMatchState.redCards || 0),
     recentEvents: evLines,
-  }}).then(r => r && push.pushPundit(r, demoSockets));
+  }}).then(r => r && pushPunditLive(r));
 }, 15000);
 
 server.listen(PORT, () => {
