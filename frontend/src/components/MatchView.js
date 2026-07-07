@@ -51,13 +51,22 @@ function updateMatchView(state) {
       if (periodEl) periodEl.textContent = "NEXT";
     }
   } else {
-    // Display-level safety net: a match past minute 45 can never be "1H",
-    // even if a stale period slipped through from the backend.
-    let period = state.period || "PRE";
-    const mt   = state.matchTime || 0;
-    if (period === "1H" && mt >= 46) period = "2H";
-    if (period === "PRE" && state.inRunning && mt > 0) period = mt <= 45 ? "1H" : "2H";
-    if (timeEl)   timeEl.textContent   = mt ? mt + "\'" : (period === "HT" ? "45\'" : period === "FT" ? "90\'" : "0\'");
-    if (periodEl) periodEl.textContent = period;
+    // Broadcast-accurate clock: trust the backend's displayTime, which carries
+    // real stoppage time ("45+6'") and the HT/FT states exactly as TV shows them.
+    const period = state.period || "PRE";
+    const mt     = state.matchTime || 0;
+    let timeText;
+    if (state.displayTime) {
+      timeText = state.displayTime;
+    } else if (period === "HT")      timeText = "HT";
+    else if (period === "FT")        timeText = "FT";
+    else if (state.addedTime > 0)    timeText = mt + "+" + state.addedTime + "'";
+    else                             timeText = (mt || 0) + "'";
+    if (timeEl)   timeEl.textContent   = timeText;
+    if (periodEl) periodEl.textContent = period === "FT" ? "FULL TIME"
+                                       : period === "HT" ? "HALF TIME"
+                                       : period;
   }
 }
+
+if (typeof module !== "undefined") module.exports = { updateMatchView, formatCountdown };
