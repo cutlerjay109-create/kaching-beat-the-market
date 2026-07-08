@@ -97,6 +97,33 @@ let stoppedAtBoundaryTs = null;  // wall time the clock first reported stopped a
 const HT_STOP_SUSTAIN_MS = Number(process.env.HT_STOP_SUSTAIN_MS || 25 * 1000);
 const FT_STOP_SUSTAIN_MS = Number(process.env.FT_STOP_SUSTAIN_MS || 45 * 1000);
 
+// ── ODDS AS GROUND TRUTH FOR MATCH STATE ────────────────────────────────────
+// Live in-play markets trade continuously through stoppage time but SUSPEND
+// at halftime and CLOSE at full time. That makes the odds stream the most
+// reliable break signal on feeds whose clock lies (frozen at 45:00/90:00
+// with Running:true). Rules:
+//   • While odds are actively streaming inRunning, NEVER declare HT/FT from
+//     clock heuristics — the match is provably live.
+//   • Clock stopped/frozen ≥ 2 min AND odds quiet ≥ 90 s → break confirmed
+//     (much faster than the pure-freeze fallbacks).
+let lastOddsActivityTs = 0;      // wall time of last odds message for THIS fixture
+let lastOddsInRunning  = null;   // the inRunning flag on that message
+const ODDS_QUIET_MS        = Number(process.env.ODDS_QUIET_MS || 90 * 1000);
+const BREAK_CONFIRM_MS     = Number(process.env.BREAK_CONFIRM_MS || 120 * 1000);
+const ODDS_LIVE_WINDOW_MS  = Number(process.env.ODDS_LIVE_WINDOW_MS || 60 * 1000);
+
+// The market is actively trading this match right now
+function oddsSayLive() {
+  return lastOddsActivityTs > 0 &&
+         (Date.now() - lastOddsActivityTs) < ODDS_LIVE_WINDOW_MS &&
+         lastOddsInRunning === true;
+}
+// The market has gone quiet / suspended (null = no odds data to judge by)
+function oddsSayBreak() {
+  if (lastOddsActivityTs === 0) return null;
+  return (Date.now() - lastOddsActivityTs) >= ODDS_QUIET_MS || lastOddsInRunning === false;
+}
+
 function latchHalftime() {
   if (!htLatched) console.log("[scores] HALFTIME latched — holding HT until real 2H evidence");
   htLatched = true;
@@ -317,6 +344,8 @@ function handlePeriodTransition(newPeriod, state) {
       .then(broadcastPundit);
     // After the full-time moment has been shown, clear the state entirely so
     // the next-match countdown takes over cleanly and no stale odds bleed in.
+    // Fast handover: the full-time call plays, then the screen moves straight
+    // to the next upcoming match — no lingering FT display to glitch against.
     if (ftCleanupTimer) clearTimeout(ftCleanupTimer);
     ftCleanupTimer = setTimeout(() => {
       if (currentMatchState && currentMatchState.period === "FT") {
@@ -328,7 +357,7 @@ function handlePeriodTransition(newPeriod, state) {
         maxAwayGoals = 0;
         loadFixtureNames();               // refresh so the countdown is accurate
       }
-    }, 90 * 1000);
+    }, 20 * 1000);
   }
 }
 
@@ -354,6 +383,10 @@ async function handleOdds(oddsData) {
     previousMatchState = { ...currentMatchState };
   }
   const fixture = fixtureNames[prob.fixtureId] || {};
+
+  // Ground-truth stamp: this fixture's market is alive right now
+  lastOddsActivityTs = Date.now();
+  lastOddsInRunning  = prob.inRunning === true;
 
   const prevPeriod = (currentMatchState || {}).period || "PRE";
   const prevTime   = (currentMatchState || {}).matchTime || 0;
@@ -551,8 +584,9 @@ async function handleScores(scoresData) {
     // signal arrives (knockout tie continuing), OR the clock starts moving
     // again, which means the FT call was premature: SELF-HEAL back to 2H.
     const secsNowFT = clock.Seconds != null ? Number(clock.Seconds) : null;
-    const ftClockAdvancing = secsNowFT != null && ftFrozenSeconds != null &&
-                             secsNowFT > ftFrozenSeconds + 15;
+    const ftClockAdvancing = (secsNowFT != null && ftFrozenSeconds != null &&
+                              secsNowFT > ftFrozenSeconds + 15)
+                          || oddsSayLive();   // market trading again = match NOT over
     if (clockPeriod === 3 || statusId === 31)      { releaseLatches(); period = "ET1"; }
     else if (clockPeriod === 4 || statusId === 32) { releaseLatches(); period = "ET2"; }
     else if (ftClockAdvancing) {
@@ -666,12 +700,15 @@ async function handleScores(scoresData) {
   }
   const stoppedForMs = stoppedAtBoundaryTs ? Date.now() - stoppedAtBoundaryTs : 0;
 
-  if (period === "1H" && stoppedForMs >= HT_STOP_SUSTAIN_MS) {
+  // The odds oracle can VETO a break call: if the market is actively trading
+  // this match, the half is provably not over — whatever the clock claims.
+  const marketLive = oddsSayLive();
+  if (period === "1H" && stoppedForMs >= HT_STOP_SUSTAIN_MS && !marketLive) {
     console.log(`[scores] clock stopped ${Math.round(stoppedForMs/1000)}s at 45'+ — HALFTIME`);
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
     latchHalftime();
   }
-  if (period === "2H" && stoppedForMs >= FT_STOP_SUSTAIN_MS) {
+  if (period === "2H" && stoppedForMs >= FT_STOP_SUSTAIN_MS && !marketLive) {
     console.log(`[scores] clock stopped ${Math.round(stoppedForMs/1000)}s at 90'+ — FULL TIME`);
     period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
     latchFullTime();
@@ -682,13 +719,19 @@ async function handleScores(scoresData) {
   // not advanced for the threshold while at the half boundary, the half is
   // over no matter what the Running flag claims.
   const frozenMs = clockFrozenFor();
-  if (period === "1H" && matchTime >= 45 && frozenMs >= HT_FREEZE_MS) {
-    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 45'+ — declaring HALFTIME`);
+  // FAST PATH: frozen clock + suspended market = break confirmed in ~2 min
+  // (this is how feeds that freeze at 45:00 with Running:true get resolved).
+  // SLOW PATH: pure-freeze fallback for fixtures with no odds data at all.
+  const breakByOdds = oddsSayBreak();
+  const htFreezeHit = frozenMs >= (breakByOdds === true ? BREAK_CONFIRM_MS : HT_FREEZE_MS);
+  const ftFreezeHit = frozenMs >= (breakByOdds === true ? BREAK_CONFIRM_MS : FT_FREEZE_MS);
+  if (period === "1H" && matchTime >= 45 && htFreezeHit && !marketLive) {
+    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 45'+ (odds break: ${breakByOdds}) — HALFTIME`);
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
     latchHalftime();
   }
-  if (period === "2H" && matchTime >= 90 && frozenMs >= FT_FREEZE_MS) {
-    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 90'+ — declaring FULL TIME`);
+  if (period === "2H" && matchTime >= 90 && ftFreezeHit && !marketLive) {
+    console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 90'+ (odds break: ${breakByOdds}) — FULL TIME`);
     period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
     latchFullTime();
   }
@@ -1183,10 +1226,15 @@ function checkFrozenClockTimeout() {
   const p  = currentMatchState.period;
   const mt = currentMatchState.matchTime || 0;
   let newPeriod = null;
-  // Either signal, sustained past its threshold, declares the break — this
-  // covers feeds that go completely silent right after the whistle.
-  if (p === "1H" && mt >= 45 && (frozenMs >= HT_FREEZE_MS || stoppedForMs >= HT_STOP_SUSTAIN_MS)) newPeriod = "HT";
-  if (p === "2H" && mt >= 90 && (frozenMs >= FT_FREEZE_MS || stoppedForMs >= FT_STOP_SUSTAIN_MS)) newPeriod = "FT";
+  // Odds oracle: an actively-trading market VETOES any break call; a
+  // suspended market fast-tracks it. Pure-freeze thresholds remain the
+  // fallback for fixtures with no odds data.
+  if (oddsSayLive()) return;
+  const breakByOdds = oddsSayBreak();
+  const htGate = breakByOdds === true ? BREAK_CONFIRM_MS : HT_FREEZE_MS;
+  const ftGate = breakByOdds === true ? BREAK_CONFIRM_MS : FT_FREEZE_MS;
+  if (p === "1H" && mt >= 45 && (frozenMs >= htGate || stoppedForMs >= HT_STOP_SUSTAIN_MS)) newPeriod = "HT";
+  if (p === "2H" && mt >= 90 && (frozenMs >= ftGate || stoppedForMs >= FT_STOP_SUSTAIN_MS)) newPeriod = "FT";
   if (!newPeriod) return;
   console.log(`[sweep] break confirmed (frozen ${Math.round(frozenMs / 1000)}s, stopped ${Math.round(stoppedForMs / 1000)}s) — declaring ${newPeriod}`);
   if (newPeriod === "HT") latchHalftime(); else latchFullTime();
@@ -1226,11 +1274,11 @@ let lastCountdownEmit = 0;
 setInterval(() => {
   if (currentMatchState && currentMatchState.inRunning) return;
   if (currentMatchState && (currentMatchState.period === "1H" || currentMatchState.period === "2H" || currentMatchState.period === "HT")) return;
-  // Hold the FULL TIME screen for 2 minutes before the next-match countdown
-  // takes over — also gives a premature FT call room to self-heal without
-  // ever flashing the next fixture over a live match.
+  // Brief FT hold (matches the 20 s cleanup) so the full-time call finishes,
+  // then the next-match countdown owns the screen. False FT is prevented at
+  // the source by the odds oracle, so no long self-heal window is needed.
   if (currentMatchState && currentMatchState.period === "FT" &&
-      Date.now() - ftDeclaredTs < 120 * 1000) return;
+      Date.now() - ftDeclaredTs < 20 * 1000) return;
   if (process.env.SOURCE_MODE === "replay") return;
   if (connectedPlayers === 0) return;
   const next = getNextUpcoming();
