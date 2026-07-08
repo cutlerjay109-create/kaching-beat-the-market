@@ -73,8 +73,35 @@ async function recordResult(playerId, predictionId, correct, secondsBefore, odds
   const { points, label } = calcPoints(correct, secondsBefore);
 
   // Get current streak
-  const res = db.exec(`SELECT streak, best_streak, score FROM players WHERE id = ?`, [playerId]);
-  if (!res.length) return null;
+  let res = db.exec(`SELECT streak, best_streak, score FROM players WHERE id = ?`, [playerId]);
+
+  // SELF-HEAL: if the player row is missing (hosting platforms wipe the disk
+  // on redeploy, but the browser still holds its old sessionId), recreate it
+  // on the spot instead of silently scoring zero forever.
+  if (!res.length || !res[0].values.length) {
+    console.warn(`[scoreStore] player ${playerId} missing (DB reset?) — recreating`);
+    try {
+      db.run(
+        `INSERT INTO players (id, nickname) VALUES (?, ?)`,
+        [playerId, "Player-" + String(playerId).slice(0, 6)]
+      );
+      save();
+    } catch (e) {
+      // Nickname collision — retry with a unique suffix
+      try {
+        db.run(
+          `INSERT INTO players (id, nickname) VALUES (?, ?)`,
+          [playerId, "Player-" + String(playerId).slice(0, 6) + "-" + Date.now() % 10000]
+        );
+        save();
+      } catch (e2) {
+        console.error("[scoreStore] could not recreate player:", e2.message);
+        return null;
+      }
+    }
+    res = db.exec(`SELECT streak, best_streak, score FROM players WHERE id = ?`, [playerId]);
+    if (!res.length || !res[0].values.length) return null;
+  }
   const [streak, bestStreak, currentScore] = res[0].values[0];
 
   const newStreak     = correct ? streak + 1 : 0;
