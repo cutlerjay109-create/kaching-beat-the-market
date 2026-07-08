@@ -302,6 +302,8 @@ function handlePeriodTransition(newPeriod, state) {
     clockConvention = null;
     resetClockTracker();
     releaseLatches();
+    lastOddsActivityTs = 0;               // no stale market state from the last match
+    lastOddsInRunning  = null;
     openPredictions = {};
     resetForNewMatch(2 * 60 * 1000);      // first question ~2 min after the whistle
     react({ type: "kickoff", data: { home, away } }).then(broadcastPundit);
@@ -723,14 +725,20 @@ async function handleScores(scoresData) {
   // (this is how feeds that freeze at 45:00 with Running:true get resolved).
   // SLOW PATH: pure-freeze fallback for fixtures with no odds data at all.
   const breakByOdds = oddsSayBreak();
-  const htFreezeHit = frozenMs >= (breakByOdds === true ? BREAK_CONFIRM_MS : HT_FREEZE_MS);
-  const ftFreezeHit = frozenMs >= (breakByOdds === true ? BREAK_CONFIRM_MS : FT_FREEZE_MS);
-  if (period === "1H" && matchTime >= 45 && htFreezeHit && !marketLive) {
+  // Fast path (market suspended) respects the live-market veto; the SLOW
+  // pure-freeze fallback is an unconditional escape hatch — a clock frozen
+  // for 6-8 minutes is a finished half no matter what a broken odds feed
+  // claims, and a wrong call self-heals the moment the clock moves again.
+  const htFreezeHit = (breakByOdds === true && frozenMs >= BREAK_CONFIRM_MS && !marketLive)
+                   || frozenMs >= HT_FREEZE_MS;
+  const ftFreezeHit = (breakByOdds === true && frozenMs >= BREAK_CONFIRM_MS && !marketLive)
+                   || frozenMs >= FT_FREEZE_MS;
+  if (period === "1H" && matchTime >= 45 && htFreezeHit) {
     console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 45'+ (odds break: ${breakByOdds}) — HALFTIME`);
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
     latchHalftime();
   }
-  if (period === "2H" && matchTime >= 90 && ftFreezeHit && !marketLive) {
+  if (period === "2H" && matchTime >= 90 && ftFreezeHit) {
     console.log(`[scores] clock frozen ${Math.round(frozenMs / 1000)}s at 90'+ (odds break: ${breakByOdds}) — FULL TIME`);
     period = "FT"; matchTime = 90; addedTime = 0; displayTime = "FT";
     latchFullTime();
@@ -1229,12 +1237,16 @@ function checkFrozenClockTimeout() {
   // Odds oracle: an actively-trading market VETOES any break call; a
   // suspended market fast-tracks it. Pure-freeze thresholds remain the
   // fallback for fixtures with no odds data.
-  if (oddsSayLive()) return;
+  const marketLive  = oddsSayLive();
   const breakByOdds = oddsSayBreak();
-  const htGate = breakByOdds === true ? BREAK_CONFIRM_MS : HT_FREEZE_MS;
-  const ftGate = breakByOdds === true ? BREAK_CONFIRM_MS : FT_FREEZE_MS;
-  if (p === "1H" && mt >= 45 && (frozenMs >= htGate || stoppedForMs >= HT_STOP_SUSTAIN_MS)) newPeriod = "HT";
-  if (p === "2H" && mt >= 90 && (frozenMs >= ftGate || stoppedForMs >= FT_STOP_SUSTAIN_MS)) newPeriod = "FT";
+  // Fast paths (market suspended / sustained stop) respect the live-market
+  // veto; the slow pure-freeze threshold is the unconditional escape hatch.
+  const htHit = (!marketLive && ((breakByOdds === true && frozenMs >= BREAK_CONFIRM_MS) || stoppedForMs >= HT_STOP_SUSTAIN_MS))
+             || frozenMs >= HT_FREEZE_MS;
+  const ftHit = (!marketLive && ((breakByOdds === true && frozenMs >= BREAK_CONFIRM_MS) || stoppedForMs >= FT_STOP_SUSTAIN_MS))
+             || frozenMs >= FT_FREEZE_MS;
+  if (p === "1H" && mt >= 45 && htHit) newPeriod = "HT";
+  if (p === "2H" && mt >= 90 && ftHit) newPeriod = "FT";
   if (!newPeriod) return;
   console.log(`[sweep] break confirmed (frozen ${Math.round(frozenMs / 1000)}s, stopped ${Math.round(stoppedForMs / 1000)}s) — declaring ${newPeriod}`);
   if (newPeriod === "HT") latchHalftime(); else latchFullTime();
