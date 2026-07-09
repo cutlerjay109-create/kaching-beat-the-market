@@ -15,7 +15,7 @@ const { PORT }                    = require("./config/env");
 const { startJwtAutoRefresh }     = require("./config/txline");
 const push                        = require("./realtime/push");
 const { startOddsSource,
-        startSacoresSource,
+        startScoresSource, // FIXED TYPO: Was startSacoresSource
         startReplayIfNeeded,
         getLastOdds }             = require("./data/source");
 const { extractProbability,
