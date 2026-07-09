@@ -22,6 +22,10 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
 
   const askedAt = question.askedAt;
   const now     = Date.now();
+
+  // Minimum 10 seconds before resolving — prevents instant resolution on first event
+  if (now - (askedAt || now) < 10000) return { resolved: false };
+
   const isHold  = HOLD_FIELDS.has(question.field);
   const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
 
@@ -41,20 +45,18 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
   let conditionMet;
 
   if (isHold) {
-    // "stays" question: YES wins only if it held all the way to the window end.
-    if (!stillMet) {            // hold broke early -> resolve now as NO-condition
+    if (!stillMet) {
       resolvedNow  = true;
       conditionMet = false;
-    } else if (expired) {       // held the whole window -> YES-condition
+    } else if (expired) {
       resolvedNow  = true;
       conditionMet = true;
     }
   } else {
-    // "happens" question: YES wins the moment it happens.
-    if (stillMet) {             // event occurred -> settle instantly
+    if (stillMet) {
       resolvedNow  = true;
       conditionMet = true;
-    } else if (expired) {       // window closed with no event -> NO
+    } else if (expired) {
       resolvedNow  = true;
       conditionMet = false;
     }
@@ -64,7 +66,6 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
 
   const correct = (answer === "yes") === conditionMet;
 
-  // How many seconds before the odds moved did the player call it
   const oddsShiftTs   = matchStateNow.oddsShiftTs || now;
   const secondsBefore = Math.max(0, Math.round((oddsShiftTs - askedAt) / 1000));
 
@@ -94,7 +95,6 @@ function _conditionMet(question, before, now) {
       return goalsNow > goalsBefore;
     }
     if (field === "team_goals") {
-      // Team-specific: "Will Brazil score in the next 3 minutes?"
       const side = targetSide || "home";
       return _teamGoals(now, side) > _teamGoals(before, side);
     }
