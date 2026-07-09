@@ -15,7 +15,7 @@ const { PORT }                    = require("./config/env");
 const { startJwtAutoRefresh }     = require("./config/txline");
 const push                        = require("./realtime/push");
 const { startOddsSource,
-        startScoresSource,
+        startSacoresSource,
         startReplayIfNeeded,
         getLastOdds }             = require("./data/source");
 const { extractProbability,
@@ -750,17 +750,27 @@ async function handleScores(scoresData) {
   if (period === "FT") { matchTime = 90; addedTime = 0; displayTime = "FT"; }
 
   // Minute-based inference ONLY when the feed never says which period it is.
-  // Generous stoppage allowance: 1H can legitimately run to 45+15.
   if (!explicitSignal) {
     if (inRunning && period === "PRE" && matchTime > 0) {
       period = matchTime <= 45 ? "1H" : "2H";
     }
-    // A raw minute far beyond any plausible first-half stoppage → it's 2H
-    if (inRunning && period === "1H" && rawMins != null && rawMins >= 60) {
+    
+    // FIX: Reduce threshold from 60 to 50. First half stoppage virtually never 
+    // exceeds 5 minutes of raw cumulative time without explicit tracking.
+    if (inRunning && period === "1H" && rawMins != null && rawMins >= 50) {
       period = "2H";
-      matchTime = Math.min(rawMins, 90);
-      addedTime = rawMins > 90 ? rawMins - 90 : 0;
+      clockConvention = "cumulative"; // Explicitly lock cumulative convention
+      
+      // Recalculate time parameters immediately for the 2H context
+      if (rawMins > 90) {
+        matchTime = 90;
+        addedTime = rawMins - 90;
+      } else {
+        matchTime = rawMins;
+        addedTime = 0;
+      }
       displayTime = addedTime > 0 ? `90+${addedTime}'` : `${matchTime}'`;
+      console.log(`[scores] Safety net triggered: rawMins (${rawMins}) forced transition to 2H`);
     }
   }
 
@@ -916,7 +926,7 @@ io.on("connection", (socket) => {
         score: { home: 0, away: 0 }, matchTime: 0,
         period: "PRE", inRunning: false,
         countdown: secsUntil,
-        _mode: process.env.SOURCE_MODE || "live",
+        _mode: "live",
       });
     }
   }
@@ -1239,7 +1249,7 @@ function checkFrozenClockTimeout() {
   // fallback for fixtures with no odds data.
   const marketLive  = oddsSayLive();
   const breakByOdds = oddsSayBreak();
-  // Fast paths (market suspended / sustained stop) respect the live-market
+  // Fast paths (market suspended / sustained stop) respects the live-market
   // veto; the slow pure-freeze threshold is the unconditional escape hatch.
   const htHit = (!marketLive && ((breakByOdds === true && frozenMs >= BREAK_CONFIRM_MS) || stoppedForMs >= HT_STOP_SUSTAIN_MS))
              || frozenMs >= HT_FREEZE_MS;
