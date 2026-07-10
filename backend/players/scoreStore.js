@@ -48,7 +48,7 @@ async function getOrCreatePlayer(sessionId, nickname) {
 
 // Calculate points based on timing
 function calcPoints(correct, secondsBefore) {
-  if (!correct) return 0;
+  if (!correct) return { points: 0, label: "None" };
   let multiplier = 1.0;
   let label = "Late";
   for (const band of TIMING_BANDS) {
@@ -104,11 +104,11 @@ async function recordResult(playerId, predictionId, correct, secondsBefore, odds
   }
   const [streak, bestStreak, currentScore] = res[0].values[0];
 
-  const newStreak     = correct ? streak + 1 : 0;
+  const newStreak     = correct ? streak + 1 : 0;       // streak resets on wrong
   const newBestStreak = Math.max(bestStreak, newStreak);
-  const streakBonus   = Math.min(newStreak * STREAK_BONUS_PER, STREAK_BONUS_MAX);
-  const totalPoints   = points + (correct ? streakBonus : 0);
-  const newScore      = currentScore + totalPoints;
+  const streakBonus   = correct ? Math.min(newStreak * STREAK_BONUS_PER, STREAK_BONUS_MAX) : 0;
+  const totalPoints   = points + streakBonus;
+  const newScore      = correct ? currentScore + totalPoints : currentScore; // score never drops
 
   // Update player
   db.run(
