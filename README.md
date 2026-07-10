@@ -180,7 +180,7 @@ The demo is accessible in-app via the **Watch Demo Match** button — no separat
 
 | | |
 |---|---|
-| **Live App** | https://kaching-beat-the-market-production.up.railway.app |
+| **Live App** | kaching-beat-the-market-production-9db5.up.railway.app |
 | **Demo Video** | https://[loom-or-youtube-link] |
 | **GitHub** | https://github.com/cutlerjay109-create/kaching-beat-the-market |
 | **Subscription Tx** | `2nVfBkAS5emXCBqPEgaTTjFdnVMH1f6Rz2DfxpDqSghZ3MyBnGeC4iiV6gwafpQ5MkxTxzquZs13FpNAZtRxJiii` |
