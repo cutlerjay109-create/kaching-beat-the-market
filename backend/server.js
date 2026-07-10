@@ -457,7 +457,11 @@ async function handleScores(scoresData) {
 
   const scoresInRunning = scoresData.inRunning != null ? scoresData.inRunning
                         : (clock.Running != null ? clock.Running : false);
-  let inRunning = prev.inRunning ? prev.inRunning : scoresInRunning;
+  // Trust an explicit Running/inRunning field when present; only fall back to
+  // the previous state when the message carries no running signal at all.
+  const hasRunningSignal = scoresData.inRunning != null || clock.Running != null;
+  const explicitStopped  = scoresData.inRunning === false || clock.Running === false;
+  let inRunning = hasRunningSignal ? scoresInRunning : (prev.inRunning || false);
 
   let period = prev.period || "PRE";
   let explicitSignal = false;
@@ -489,6 +493,24 @@ async function handleScores(scoresData) {
              gameState.includes("ended")       || gameState.includes("finished")) { period = "FT"; explicitSignal = true; }
   }
 
+  // ── SECOND-HALF RESTART DETECTION (per-half clocks) ──────────────────
+  // A clock that resets to ~0 after the match already reached 44'+ can only
+  // be the second-half kickoff. This catches feeds that never sent an
+  // explicit HT/2H signal, so the display never lingers on "1H 45+X".
+  const prevMT = prev.matchTime || 0;
+  if (!explicitSignal && !ftLatched && rawMins != null && rawMins <= 2 &&
+      (prevMT >= 44 || htLatched) && (period === "1H" || period === "HT") &&
+      (rawMins >= 1 || scoresData.inRunning === true || clock.Running === true)) {
+    console.log("[scores] clock reset after 44'+ — SECOND HALF restart detected");
+    htLatched = false; htFrozenSeconds = null; stoppedAtBoundaryTs = null;
+    period = "2H";
+    explicitSignal = true;
+    if (clockConvention !== "per-half") {
+      clockConvention = "per-half";
+      console.log("[scores] clock convention latched: per-half (via 2H restart)");
+    }
+  }
+
   if (period === "HT") latchHalftime();
   if (period === "FT") latchFullTime();
 
@@ -516,10 +538,11 @@ async function handleScores(scoresData) {
                            gameState.includes("second_half") || gameState === "2h";
     if (explicit2H || clockAdvancing || clockResetLow) {
       htLatched = false; htFrozenSeconds = null;
+      stoppedAtBoundaryTs = null;
       period = "2H";
-      if (clockResetLow && clockConvention == null) {
-        clockConvention = "per-half";
-        console.log("[scores] clock convention latched: per-half (via 2H restart)");
+      if (clockConvention == null && secsNow != null) {
+        clockConvention = secsNow < 44 * 60 ? "per-half" : "cumulative";
+        console.log(`[scores] clock convention latched: ${clockConvention} (via 2H restart)`);
       }
     } else {
       period = "HT";
@@ -530,8 +553,6 @@ async function handleScores(scoresData) {
     clockConvention = rawMins < 45 ? "per-half" : "cumulative";
     console.log(`[scores] clock convention latched: ${clockConvention}`);
   }
-  const perHalfClock = clockConvention === "per-half";
-
   let matchTime, addedTime = 0, displayTime = null;
 
   if (rawMins == null) {
@@ -541,9 +562,16 @@ async function handleScores(scoresData) {
     if (rawMins > 45) { matchTime = 45; addedTime = rawMins - 45; }
     else              { matchTime = rawMins; }
   } else if (period === "2H") {
-    const cum = perHalfClock ? rawMins + 45 : rawMins;
+    // Self-heal: a cumulative clock can never read below 45' in the second
+    // half, so a low reading proves the feed counts per-half. Without this
+    // the display would sit frozen on 45' for the whole half.
+    if (rawMins <= 44 && clockConvention !== "per-half") {
+      clockConvention = "per-half";
+      console.log("[scores] clock convention corrected: per-half (2H reading < 45')");
+    }
+    const cum = clockConvention === "per-half" ? rawMins + 45 : rawMins;
     if (cum > 90) { matchTime = 90; addedTime = cum - 90; }
-    else          { matchTime = Math.max(cum, 45); }
+    else          { matchTime = Math.max(cum, 46); } // 2H display starts at 46'
   } else if (period === "HT") {
     matchTime = 45; addedTime = 0;
   } else if (period === "FT") {
@@ -561,7 +589,9 @@ async function handleScores(scoresData) {
   if (inRunning && addedTime === 0 &&
       ((period === "1H" && matchTime === 45) || (period === "2H" && matchTime === 90))) {
     if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
-    addedTime = Math.min(15, Math.max(1, Math.floor((Date.now() - stoppageAnchorTs) / 60000) + 1));
+    // First 60s at the cap is still the 45th (or 90th) minute — show 45',
+    // then tick 45+1', 45+2'... as real time elapses.
+    addedTime = Math.min(15, Math.floor((Date.now() - stoppageAnchorTs) / 60000));
   } else if (addedTime > 0) {
     if (!stoppageAnchorTs) stoppageAnchorTs = Date.now();
   } else {
@@ -582,12 +612,24 @@ async function handleScores(scoresData) {
                   || (period === "2H" && matchTime >= 90);
   if (!scoresInRunning && atBoundary) {
     if (!stoppedAtBoundaryTs) stoppedAtBoundaryTs = Date.now();
-  } else if (scoresInRunning) {
+  } else {
     stoppedAtBoundaryTs = null;
   }
   const stoppedForMs = stoppedAtBoundaryTs ? Date.now() - stoppedAtBoundaryTs : 0;
 
   const marketLive = oddsSayLive();
+
+  // ── INSTANT HALFTIME ──────────────────────────────────────────────────
+  // The feed explicitly reports the clock stopped at 45'+: that IS the
+  // halftime whistle. Flip to HT immediately — no sustain wait, no lingering
+  // on 45+X. (Guard: if the clock is capped at exactly 45' with the market
+  // clearly still trading in-running, hold — stoppage is still being played.)
+  if (period === "1H" && matchTime >= 45 && explicitStopped &&
+      !(addedTime === 0 && rawMins != null && rawMins <= 45 && marketLive)) {
+    console.log("[scores] clock explicitly stopped at 45'+ — HALFTIME (instant)");
+    period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
+    latchHalftime();
+  }
   if (period === "1H" && stoppedForMs >= HT_STOP_SUSTAIN_MS && !marketLive) {
     console.log(`[scores] clock stopped ${Math.round(stoppedForMs/1000)}s at 45'+ — HALFTIME`);
     period = "HT"; matchTime = 45; addedTime = 0; displayTime = "HT";
@@ -625,6 +667,7 @@ async function handleScores(scoresData) {
     }
     if (inRunning && period === "1H" && rawMins != null && rawMins >= 60) {
       period = "2H";
+      if (clockConvention == null) clockConvention = "cumulative";
       matchTime = Math.min(rawMins, 90);
       addedTime = rawMins > 90 ? rawMins - 90 : 0;
       displayTime = addedTime > 0 ? `90+${addedTime}'` : `${matchTime}'`;
