@@ -56,7 +56,13 @@ function resolve(question, answer, matchStateBefore, matchStateNow, prediction) 
   const windowMinutes = question.windowMinutes || 5;
   const hardExpiryTs  = question.hardExpiryTs || question.expiresAt || (askedAt + windowMinutes * 90 * 1000);
 
-  const windowClosedByClock = nowMinute >= askedAtMinute + windowMinutes;
+  // If _resolveAtMinute was pre-computed at ask time (demo questions), use it
+  // directly — it's more reliable than re-deriving askedAtMinute + windowMinutes
+  // which can drift if match time tracking has any inconsistency.
+  const targetMinute = question._resolveAtMinute != null
+    ? question._resolveAtMinute
+    : askedAtMinute + windowMinutes;
+  const windowClosedByClock = nowMinute >= targetMinute;
   const windowClosedByCap   = now >= hardExpiryTs;
   const expired = windowClosedByClock || windowClosedByCap;
 
