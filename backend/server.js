@@ -1107,14 +1107,18 @@ io.on("connection", (socket) => {
           demoQuestion = {
             ...base, text, targetSide,
             askedAt,
-            askedAtMinute: demoMatchTime,
+            askedAtMinute:    demoMatchTime,
+            // Pre-compute the EXACT target minute so the resolver never has
+            // to re-derive it. Protects against any drift between ask time
+            // and the tick where windowClosedByClock is evaluated.
+            _resolveAtMinute: demoMatchTime + windowMinutes,
             windowMinutes,
             answerDeadline: now + answerWindowMs,
             hardExpiryTs,
             expiresAt: hardExpiryTs,
             baselineState,  // ask-time snapshot for resolver
           };
-          console.log(`[demo] asking: "${text}" | window ${windowMinutes} match-min from ${demoMatchTime}'`);
+          console.log(`[demo] asking: "${text}" | window ${windowMinutes} match-min from ${demoMatchTime}' → resolves at ${demoMatchTime + windowMinutes}'`);
           socket.emit("new_question", {
             id: base.id, text, type: base.type,
             windowMs: answerWindowMs, expiresAt: demoQuestion.answerDeadline,
