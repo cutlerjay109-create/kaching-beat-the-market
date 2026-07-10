@@ -922,11 +922,12 @@ io.on("connection", (socket) => {
         ? { ...askBaseline, homeProb: demoHomeProb, awayProb: demoAwayProb, matchTime: demoMatchTime }
         : askBaseline;
       demoPrediction = {
-        question: demoQuestion,
+        question:          demoQuestion,
         answer,
-        sessionId: sid,
+        sessionId:         sid,
         matchStateBefore,
-        submittedAt: Date.now(), // guard: minimum wait before resolve fires
+        submittedAt:       Date.now(),
+        submittedAtMinute: demoMatchTime, // window anchored from submission, not ask time
       };
       demoQuestion = null;
       socket.emit("prediction_accepted", {
@@ -1038,7 +1039,9 @@ io.on("connection", (socket) => {
           oddsShiftTs: Date.now(),
         };
         const _q = demoPrediction.question;
-        console.log(`[demo-resolve] tick: nowMinute=${demoMatchTime} targetMinute=${_q._resolveAtMinute} askedAt=${_q.askedAtMinute} window=${_q.windowMinutes} guardMs=${Date.now()-(demoPrediction.submittedAt||0)}`);
+        const _subMin = demoPrediction.submittedAtMinute;
+        const _tgt = _subMin != null ? _subMin + _q.windowMinutes : _q._resolveAtMinute;
+        console.log(`[demo-resolve] tick: nowMinute=${demoMatchTime} target=${_tgt} (submittedAt=${_subMin} asked=${_q.askedAtMinute} window=${_q.windowMinutes}) guardMs=${Date.now()-(demoPrediction.submittedAt||0)}`);
         const result = resolve(demoPrediction.question, demoPrediction.answer, demoPrediction.matchStateBefore, currentDemoState, demoPrediction);
         if (result.resolved) {
           const pred = demoPrediction;
