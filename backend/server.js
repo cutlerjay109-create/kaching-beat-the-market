@@ -748,7 +748,7 @@ async function resolveOpenPredictions() {
 
   let resolvedAny = false;
   for (const [predId, pred] of Object.entries(openPredictions)) {
-    const result = resolve(question, pred.answer, pred.matchStateBefore, currentMatchState);
+    const result = resolve(question, pred.answer, pred.matchStateBefore, currentMatchState, pred);
     if (!result.resolved) continue;
     resolvedAny = true;
     delete openPredictions[predId];
@@ -834,6 +834,7 @@ io.on("connection", (socket) => {
     socketsBySession[sessionId] = socket.id;
     openPredictions[predId] = {
       sessionId, socketId: socket.id, question, answer,
+      submittedAt: Date.now(),
       matchStateBefore: { ...currentMatchState, score: { ...(currentMatchState.score || {}) } },
     };
     socket.emit("prediction_accepted", { predictionId: predId, question: question.text, answer });
@@ -900,7 +901,9 @@ io.on("connection", (socket) => {
       // time. If we used current state here, probability drift between ask and
       // submit would shift the baseline and could make the condition look
       // already-met the instant the next tick arrives.
-      const matchStateBefore = demoQuestion.baselineState || {
+      // Ask-time baseline (for score questions: goals/corners/cards —
+      // "did X happen after the question was asked?")
+      const askBaseline = demoQuestion.baselineState || {
         score:     { home: demoLastHome, away: demoLastAway },
         goals:     demoLastHome + demoLastAway,
         corners:   0,
@@ -910,11 +913,20 @@ io.on("connection", (socket) => {
         matchTime: demoMatchTime,
         inRunning: true,
       };
+      // For odds/probability questions, reset the baseline to NOW (submission time).
+      // "Will the market move 5%?" should mean "from where it is when I bet" —
+      // not from 3+ minutes ago when the question was asked (bar has already
+      // drifted by then and would resolve instantly).
+      const isOddsQ = demoQuestion.source === "odds";
+      const matchStateBefore = isOddsQ
+        ? { ...askBaseline, homeProb: demoHomeProb, awayProb: demoAwayProb, matchTime: demoMatchTime }
+        : askBaseline;
       demoPrediction = {
         question: demoQuestion,
         answer,
         sessionId: sid,
         matchStateBefore,
+        submittedAt: Date.now(), // guard: minimum wait before resolve fires
       };
       demoQuestion = null;
       socket.emit("prediction_accepted", {
@@ -1012,7 +1024,7 @@ io.on("connection", (socket) => {
         demoLastAway = score.away;
       }
 
-      if (demoPrediction) {
+      if (demoPrediction && Date.now() - (demoPrediction.submittedAt || 0) > 8000) {
         const { resolve } = require("./game/resolver");
         const currentDemoState = {
           score:    { home: demoLastHome, away: demoLastAway },
@@ -1025,7 +1037,7 @@ io.on("connection", (socket) => {
           inRunning: data.inRunning != null ? data.inRunning : true,
           oddsShiftTs: Date.now(),
         };
-        const result = resolve(demoPrediction.question, demoPrediction.answer, demoPrediction.matchStateBefore, currentDemoState);
+        const result = resolve(demoPrediction.question, demoPrediction.answer, demoPrediction.matchStateBefore, currentDemoState, demoPrediction);
         if (result.resolved) {
           const pred = demoPrediction;
           demoPrediction = null;
