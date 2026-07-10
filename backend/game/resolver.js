@@ -56,12 +56,17 @@ function resolve(question, answer, matchStateBefore, matchStateNow, prediction) 
   const windowMinutes = question.windowMinutes || 5;
   const hardExpiryTs  = question.hardExpiryTs || question.expiresAt || (askedAt + windowMinutes * 90 * 1000);
 
-  // If _resolveAtMinute was pre-computed at ask time (demo questions), use it
-  // directly — it's more reliable than re-deriving askedAtMinute + windowMinutes
-  // which can drift if match time tracking has any inconsistency.
-  const targetMinute = question._resolveAtMinute != null
-    ? question._resolveAtMinute
-    : askedAtMinute + windowMinutes;
+  // Window anchor priority:
+  //   1. submittedAtMinute (when user pressed YES/NO) — most natural: "5 min
+  //      from when I answered" rather than "5 min from when the question appeared"
+  //   2. _resolveAtMinute  (pre-computed ask-time target, demo questions)
+  //   3. askedAtMinute + windowMinutes (live fallback)
+  const submittedAtMinute = prediction ? prediction.submittedAtMinute : null;
+  const targetMinute = submittedAtMinute != null
+    ? submittedAtMinute + windowMinutes
+    : question._resolveAtMinute != null
+      ? question._resolveAtMinute
+      : askedAtMinute + windowMinutes;
   const windowClosedByClock = nowMinute >= targetMinute;
   const windowClosedByCap   = now >= hardExpiryTs;
   const expired = windowClosedByClock || windowClosedByCap;
