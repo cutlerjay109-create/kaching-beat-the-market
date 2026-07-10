@@ -1037,6 +1037,8 @@ io.on("connection", (socket) => {
           inRunning: data.inRunning != null ? data.inRunning : true,
           oddsShiftTs: Date.now(),
         };
+        const _q = demoPrediction.question;
+        console.log(`[demo-resolve] tick: nowMinute=${demoMatchTime} targetMinute=${_q._resolveAtMinute} askedAt=${_q.askedAtMinute} window=${_q.windowMinutes} guardMs=${Date.now()-(demoPrediction.submittedAt||0)}`);
         const result = resolve(demoPrediction.question, demoPrediction.answer, demoPrediction.matchStateBefore, currentDemoState, demoPrediction);
         if (result.resolved) {
           const pred = demoPrediction;
@@ -1118,7 +1120,7 @@ io.on("connection", (socket) => {
             expiresAt: hardExpiryTs,
             baselineState,  // ask-time snapshot for resolver
           };
-          console.log(`[demo] asking: "${text}" | window ${windowMinutes} match-min from ${demoMatchTime}' → resolves at ${demoMatchTime + windowMinutes}'`);
+          console.log(`[demo] asking: "${text}" | askedAtMinute=${demoMatchTime} window=${windowMinutes} _resolveAtMinute=${demoMatchTime + windowMinutes} displayTime=${demoDisplayTime}`);
           socket.emit("new_question", {
             id: base.id, text, type: base.type,
             windowMs: answerWindowMs, expiresAt: demoQuestion.answerDeadline,
