@@ -903,14 +903,45 @@ io.on("connection", (socket) => {
       const away  = data.away_team || demoAway;
       const score = data.score     || { home: 0, away: 0 };
       const demoPrevPeriod = demoPeriod;
-      demoMatchTime = data.match_time != null ? data.match_time : demoMatchTime;
-      demoPeriod    = data.period   || demoPeriod;
+
+      const rawMt    = data.match_time != null ? Number(data.match_time) : null;
       const inRunning = data.inRunning != null ? data.inRunning : true;
 
-      if (demoPeriod === "1H" && demoMatchTime >= 46) demoPeriod = "2H";
-      if (demoPeriod === "PRE" && inRunning && demoMatchTime > 0) {
-        demoPeriod = demoMatchTime <= 45 ? "1H" : "2H";
+      // Trust the recording's explicit period field; fall back to previous.
+      if (data.period) demoPeriod = data.period;
+
+      // PRE → live inference when no explicit period yet
+      if (demoPeriod === "PRE" && inRunning && rawMt != null && rawMt > 0) {
+        demoPeriod = rawMt <= 45 ? "1H" : "2H";
       }
+
+      // Compute display time exactly like the live path does:
+      //   1H: cap at 45, extras become 45+N
+      //   HT: freeze at "HT"
+      //   2H: cumulative (recording already has 46, 47… up to 90)
+      //   FT: freeze at "FT"
+      let demoAddedTime = 0;
+      let demoDisplayTime;
+      if (rawMt != null) {
+        if (demoPeriod === "1H") {
+          if (rawMt > 45) { demoMatchTime = 45; demoAddedTime = rawMt - 45; }
+          else            { demoMatchTime = rawMt; }
+        } else if (demoPeriod === "2H") {
+          if (rawMt > 90) { demoMatchTime = 90; demoAddedTime = rawMt - 90; }
+          else            { demoMatchTime = Math.max(rawMt, 46); }
+        } else if (demoPeriod === "HT") {
+          demoMatchTime = 45;
+        } else if (demoPeriod === "FT") {
+          demoMatchTime = 90;
+        } else {
+          demoMatchTime = rawMt;
+        }
+      }
+
+      if      (demoPeriod === "HT")   demoDisplayTime = "HT";
+      else if (demoPeriod === "FT")   demoDisplayTime = "FT";
+      else if (demoAddedTime > 0)     demoDisplayTime = `${demoMatchTime}+${demoAddedTime}'`;
+      else                            demoDisplayTime = `${demoMatchTime || 0}'`;
 
       if (demoPeriod !== demoPrevPeriod) {
         const scoreStr = `${score.home || 0}-${score.away || 0}`;
@@ -935,7 +966,8 @@ io.on("connection", (socket) => {
         homeTeam: home, awayTeam: away, score,
         goals: (score.home||0)+(score.away||0),
         corners: data.corners||0, yellowCards: data.yellowCards||0, redCards: 0,
-        matchTime: demoMatchTime, period: demoPeriod, inRunning,
+        matchTime: demoMatchTime, addedTime: demoAddedTime, displayTime: demoDisplayTime,
+        period: demoPeriod, inRunning,
         homeProb: demoHomeProb, awayProb: demoAwayProb,
         _mode: "replay",
       });
