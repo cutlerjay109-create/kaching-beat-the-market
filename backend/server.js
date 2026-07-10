@@ -862,8 +862,30 @@ io.on("connection", (socket) => {
     } catch(e) { /* use defaults */ }
     console.log("[demo] playing:", demoHome, "vs", demoAway);
 
-    let demoHomeProb   = 0.42;
-    let demoAwayProb   = 0.30;
+    // Synthetic probability engine — starts near 50/50, drifts per tick, spikes on goals.
+    // The recording odds came from a lopsided match and barely moved, so we ignore them.
+    let demoHomeProb = 0.48;
+    let demoAwayProb = 0.35;
+    let _demoSeed    = 1;
+    function _demoRand() { _demoSeed = (_demoSeed * 1664525 + 1013904223) & 0xffffffff; return (_demoSeed >>> 0) / 0xffffffff; }
+    function _clampProb(h, a) {
+      h = Math.max(0.04, Math.min(0.91, h));
+      a = Math.max(0.04, Math.min(0.91, a));
+      const t = h + a + 0.10;
+      return { home: h / t, away: a / t };
+    }
+    function _driftProb() {
+      const drift = (_demoRand() - 0.48) * 0.025;
+      const p = _clampProb(demoHomeProb + drift, demoAwayProb - drift * 0.6);
+      demoHomeProb = p.home; demoAwayProb = p.away;
+    }
+    function _goalSpike(scoringTeam) {
+      const spike = 0.12 + _demoRand() * 0.08;
+      const p = scoringTeam === "home"
+        ? _clampProb(demoHomeProb + spike, demoAwayProb - spike * 0.8)
+        : _clampProb(demoHomeProb - spike * 0.8, demoAwayProb + spike);
+      demoHomeProb = p.home; demoAwayProb = p.away;
+    }
     let demoLastHome   = 0;
     let demoLastAway   = 0;
     let demoMatchTime  = 0;
@@ -972,11 +994,15 @@ io.on("connection", (socket) => {
         _mode: "replay",
       });
 
+      // Drift probs on every tick; spike on goals
+      _driftProb();
       if (score.home > demoLastHome || score.away > demoLastAway) {
-        const scoringTeam = score.home > demoLastHome ? home : away;
+        const scoringTeam = score.home > demoLastHome ? "home" : "away";
+        const scoringTeamName = scoringTeam === "home" ? home : away;
         const scoreStr = score.home + "-" + score.away;
-        console.log("[demo] GOAL!", scoringTeam, scoreStr);
-        react({ type: "goal", data: { team: scoringTeam, score: scoreStr } })
+        console.log("[demo] GOAL!", scoringTeamName, scoreStr);
+        _goalSpike(scoringTeam);
+        react({ type: "goal", data: { team: scoringTeamName, score: scoreStr } })
           .then(r => r && socket.emit("pundit_reaction", r));
         demoLastHome = score.home;
         demoLastAway = score.away;
@@ -1078,15 +1104,14 @@ io.on("connection", (socket) => {
       }
     }
 
-    function sendOddsToSocket(data) {
-      const prob = extractProbability(data);
-      if (!prob) return;
-      demoHomeProb = prob.home;
-      demoAwayProb = prob.away;
+    function sendOddsToSocket(_data) {
+      // Synthetic demo: ignore the static recording odds (which barely moved).
+      // Just drift the bar a little and push the current synthetic values.
+      _driftProb();
       socket.emit("match_state", {
         homeTeam: demoHome, awayTeam: demoAway,
         score: { home: demoLastHome, away: demoLastAway },
-        homeProb: prob.home, awayProb: prob.away,
+        homeProb: demoHomeProb, awayProb: demoAwayProb,
         inRunning: true,
         period: demoPeriod || "1H",
         matchTime: demoMatchTime,
