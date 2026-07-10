@@ -17,17 +17,40 @@ const HOLD_FIELDS = new Set(["no_goals", "probability_hold", "probability_tight"
 
 // Resolve a yes/no prediction against current match state.
 // Returns { resolved: true, correct, ... } or { resolved: false }.
-function resolve(question, answer, matchStateBefore, matchStateNow) {
+//
+// prediction (optional 5th arg): the stored prediction object { submittedAt, matchStateBefore }
+//
+//   submittedAt — wall-clock ms when the user locked in their answer.
+//   When provided, the minimum-wait guard anchors on submission time instead
+//   of ask time. Without this, a user who answers 3 minutes into a 5-minute
+//   window bypasses the guard entirely (ask time is long past), and if the
+//   probability baseline has already drifted past the threshold the resolver
+//   fires on the very next tick — instant resolution.
+//
+//   For odds/probability questions, prediction.matchStateBefore is used as the
+//   baseline instead of the ask-time matchStateBefore. "Will the market move
+//   5%?" is measured from when the user bet, not from when the question first
+//   appeared minutes earlier.
+function resolve(question, answer, matchStateBefore, matchStateNow, prediction) {
   if (!question || !matchStateNow) return { resolved: false };
 
-  const askedAt = question.askedAt;
-  const now     = Date.now();
+  const askedAt     = question.askedAt;
+  const submittedAt = prediction ? prediction.submittedAt : null;
+  const now         = Date.now();
 
-  // Minimum 10 seconds before resolving — prevents instant resolution on first event
-  if (now - (askedAt || now) < 10000) return { resolved: false };
+  // Guard anchors on SUBMISSION time when available, otherwise ask time.
+  const guardAnchor = submittedAt || askedAt || now;
+  const minWaitMs   = submittedAt ? 8000 : 10000; // 8s from submit, 10s from ask
+  if (now - guardAnchor < minWaitMs) return { resolved: false };
 
-  const isHold  = HOLD_FIELDS.has(question.field);
-  const stillMet = _conditionMet(question, matchStateBefore, matchStateNow);
+  // For odds questions use the submission-time baseline when provided.
+  const isOddsQ  = question.source === "odds";
+  const baseline = (isOddsQ && prediction && prediction.matchStateBefore)
+    ? prediction.matchStateBefore
+    : matchStateBefore;
+
+  const isHold   = HOLD_FIELDS.has(question.field);
+  const stillMet = _conditionMet(question, baseline, matchStateNow);
 
   // ── MATCH-CLOCK EXPIRY ────────────────────────────────────────────────
   const nowMinute     = matchStateNow.matchTime || 0;
@@ -74,8 +97,8 @@ function resolve(question, answer, matchStateBefore, matchStateNow) {
     correct,
     conditionMet,
     secondsBefore,
-    oddsBefore:   matchStateBefore ? matchStateBefore.homeProb : null,
-    oddsAfter:    matchStateNow    ? matchStateNow.homeProb    : null,
+    oddsBefore:   baseline       ? baseline.homeProb       : null,
+    oddsAfter:    matchStateNow  ? matchStateNow.homeProb  : null,
   };
 }
 
