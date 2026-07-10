@@ -890,27 +890,31 @@ io.on("connection", (socket) => {
     let demoLastAway   = 0;
     let demoMatchTime  = 0;
     let demoPeriod     = "PRE";
-    let demoLastQTs    = 0;
+    let demoLastQTs    = Date.now(); // delay first question (gap checked below)
     let demoQuestion   = null;
     let demoPrediction = null;
 
     socket.on("submit_prediction_demo", async ({ answer, sessionId: sid }) => {
       if (!demoQuestion) return;
+      // Use the baseline snapshot from ASK time — never the state at submission
+      // time. If we used current state here, probability drift between ask and
+      // submit would shift the baseline and could make the condition look
+      // already-met the instant the next tick arrives.
+      const matchStateBefore = demoQuestion.baselineState || {
+        score:     { home: demoLastHome, away: demoLastAway },
+        goals:     demoLastHome + demoLastAway,
+        corners:   0,
+        homeProb:  demoHomeProb,
+        awayProb:  demoAwayProb,
+        period:    demoPeriod,
+        matchTime: demoMatchTime,
+        inRunning: true,
+      };
       demoPrediction = {
-        question:    demoQuestion,
+        question: demoQuestion,
         answer,
-        sessionId:   sid,
-        matchStateBefore: {
-          score:       { home: demoLastHome, away: demoLastAway },
-          goals:       demoLastHome + demoLastAway,
-          corners:     0,
-          homeProb:    demoHomeProb,
-          awayProb:    demoAwayProb,
-          period:      demoPeriod,
-          matchTime:   demoMatchTime,
-          inRunning:   true,
-        },
-        askedAt: Date.now(),
+        sessionId: sid,
+        matchStateBefore,
       };
       demoQuestion = null;
       socket.emit("prediction_accepted", {
@@ -1051,7 +1055,9 @@ io.on("connection", (socket) => {
       }
 
       const now = Date.now();
-      if (inRunning && !demoQuestion && !demoPrediction && now - demoLastQTs > 15000 &&
+      // First question: wait 20s after kickoff; subsequent gap = 15s
+      const demoGapMs = demoLastQTs === 0 ? 20000 : 15000;
+      if (inRunning && !demoQuestion && !demoPrediction && now - demoLastQTs > demoGapMs &&
           demoPeriod !== "FT" && demoPeriod !== "HT" && demoPeriod !== "PRE") {
         demoLastQTs = now;
         const { getValidQuestions } = require("./game/questionEngine");
@@ -1074,6 +1080,18 @@ io.on("connection", (socket) => {
           const hardExpiryTs   = now + windowMinutes * REPLAY_SECS_PER_MIN * 1000 + 8000;
           const answerWindowMs = 15000;
           const askedAt        = now;
+          // Snapshot match state at ASK TIME — used as baseline by the resolver.
+          // Do NOT use state at submission time (probability may have drifted by then).
+          const baselineState  = {
+            score:     { home: demoLastHome, away: demoLastAway },
+            goals:     demoLastHome + demoLastAway,
+            corners:   0,
+            homeProb:  demoHomeProb,
+            awayProb:  demoAwayProb,
+            period:    demoPeriod,
+            matchTime: demoMatchTime,
+            inRunning: true,
+          };
           demoQuestion = {
             ...base, text, targetSide,
             askedAt,
@@ -1082,6 +1100,7 @@ io.on("connection", (socket) => {
             answerDeadline: now + answerWindowMs,
             hardExpiryTs,
             expiresAt: hardExpiryTs,
+            baselineState,  // ask-time snapshot for resolver
           };
           console.log(`[demo] asking: "${text}" | window ${windowMinutes} match-min from ${demoMatchTime}'`);
           socket.emit("new_question", {
